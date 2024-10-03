@@ -7,7 +7,6 @@ mod handlers; // Declares the `handlers` module (from src/handlers.rs)
 
 use crate::db::establish_connection;
 use crate::handlers::{create_user, start_fasting, stop_fasting};
-//use diesel::prelude::*;
 use structopt::StructOpt;
 
 #[derive(StructOpt)]
@@ -33,7 +32,7 @@ fn main() {
     println!("Using database URL: {}", database_url);
 
     // Establish the connection to the database
-    let connection = establish_connection();
+    let _connection = establish_connection();
 
     // Parse command-line arguments
     let args = Cli::from_args();
@@ -42,7 +41,7 @@ fn main() {
     match args.command {
         Command::Register { username, password } => {
             println!("Registering user: {} with password: {}", username, password);
-            create_user(&username,  &password); // Example function call
+            create_user(&username, &password); // Ensure the correct function signature
         }
         Command::Login { username, password } => {
             println!(
@@ -53,11 +52,11 @@ fn main() {
         }
         Command::StartFasting { user_id } => {
             println!("Starting fasting session for user ID: {}", user_id);
-            start_fasting(&user_id());
+            start_fasting(user_id); // Pass user_id directly
         }
         Command::StopFasting { session_id } => {
             println!("Stopping fasting session with ID: {}", session_id);
-            stop_fasting( session_id);
+            stop_fasting(session_id); // Ensure the correct function signature
         }
     }
 }
