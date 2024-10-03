@@ -1,0 +1,11 @@
+[package]
+name = "fasting_rust"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+diesel = { version = "1.4", features = ["sqlite"] }
+dotenv = "0.15"
+bcrypt = "0.10"
+chrono = "0.4"
+notify-rust = "0.8"
