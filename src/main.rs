@@ -2,9 +2,12 @@ extern crate dotenv;
 use dotenv::dotenv;
 use std::env;
 
+mod db; // Declares the `db` module (from src/db.rs)
+mod handlers; // Declares the `handlers` module (from src/handlers.rs)
+
 use crate::db::establish_connection;
 use crate::handlers::{create_user, start_fasting, stop_fasting};
-use diesel::prelude::*;
+//use diesel::prelude::*;
 use structopt::StructOpt;
 
 #[derive(StructOpt)]
@@ -39,7 +42,7 @@ fn main() {
     match args.command {
         Command::Register { username, password } => {
             println!("Registering user: {} with password: {}", username, password);
-            create_user(&connection, &username, &password); // Example function call
+            create_user(&username,  &password); // Example function call
         }
         Command::Login { username, password } => {
             println!(
@@ -50,11 +53,11 @@ fn main() {
         }
         Command::StartFasting { user_id } => {
             println!("Starting fasting session for user ID: {}", user_id);
-            start_fasting(&connection, user_id);
+            start_fasting(&user_id());
         }
         Command::StopFasting { session_id } => {
             println!("Stopping fasting session with ID: {}", session_id);
-            stop_fasting(&connection, session_id);
+            stop_fasting( session_id);
         }
     }
 }

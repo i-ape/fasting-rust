@@ -1,19 +1,15 @@
-use crate::models::User;
-use crate::schema::users::dsl::*;
-use diesel::insert_into;
+use crate::db::establish_connection;
 
-pub fn create_user(conn: &SqliteConnection, username: &str, hashed_password: &str) -> User {
-    let new_user = User {
-        id: 0,
-        username: username.to_string(),
-        hashed_password: hashed_password.to_string(),
-        created_at: chrono::Utc::now().naive_utc(),
-    };
+pub fn create_user(username: &str, password: &str) {
+    println!("Creating user: {} with password: {}", username, password);
+    let _conn = establish_connection();
+    // Insert user logic here
+}
 
-    insert_into(users)
-        .values(&new_user)
-        .execute(conn)
-        .expect("Error creating new user");
+pub fn start_fasting(user_id: i32) {
+    println!("Starting fasting session for user ID: {}", user_id);
+}
 
-    new_user
+pub fn stop_fasting(session_id: i32) {
+    println!("Stopping fasting session for session ID: {}", session_id);
 }
