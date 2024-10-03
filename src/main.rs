@@ -1,3 +1,7 @@
+extern crate dotenv;
+use dotenv::dotenv;
+use std::env;
+
 use crate::db::establish_connection;
 use crate::handlers::{create_user, start_fasting, stop_fasting};
 use diesel::prelude::*;
@@ -18,19 +22,39 @@ enum Command {
 }
 
 fn main() {
+    // Load environment variables from .env file
+    dotenv().ok();
+
+    // Retrieve the database URL and establish the connection
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    println!("Using database URL: {}", database_url);
+
+    // Establish the connection to the database
+    let connection = establish_connection();
+
+    // Parse command-line arguments
     let args = Cli::from_args();
+
+    // Match and execute the relevant subcommand
     match args.command {
         Command::Register { username, password } => {
-            // Call the registration function here
+            println!("Registering user: {} with password: {}", username, password);
+            create_user(&connection, &username, &password); // Example function call
         }
         Command::Login { username, password } => {
-            // Call the login function here
+            println!(
+                "Attempting to log in user: {} with password: {}",
+                username, password
+            );
+            // Implement login logic here
         }
         Command::StartFasting { user_id } => {
-            // Call the start fasting function here
+            println!("Starting fasting session for user ID: {}", user_id);
+            start_fasting(&connection, user_id);
         }
         Command::StopFasting { session_id } => {
-            // Call the stop fasting function here
+            println!("Stopping fasting session with ID: {}", session_id);
+            stop_fasting(&connection, session_id);
         }
     }
 }
