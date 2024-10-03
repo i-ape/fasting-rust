@@ -1,3 +1,6 @@
+use crate::db::establish_connection;
+use crate::handlers::{create_user, start_fasting, stop_fasting};
+use diesel::prelude::*;
 use structopt::StructOpt;
 
 #[derive(StructOpt)]
