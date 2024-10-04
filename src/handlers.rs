@@ -3,6 +3,11 @@ use diesel::sqlite::SqliteConnection;use crate::db::establish_connection;
 pub fn create_user(_connection: &SqliteConnection, username: &str, password: &str) {
     println!("Creating user: {} with password: {}", username, password);
     let _conn = establish_connection();
+
+    diesel::insert_into(users)
+        .values(&new_user)
+        .execute(conn)
+        .expect("Error creating user");
 }
 
 pub fn start_fasting(user_id: i32) {
