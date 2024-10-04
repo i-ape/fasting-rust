@@ -6,7 +6,7 @@ pub fn create_user(_connection: &SqliteConnection, username: &str, password: &st
 
     diesel::insert_into(users)
         .values(&new_user)
-        .execute(conn)
+        .execute(_conn)
         .expect("Error creating user");
 }
 
