@@ -1,9 +1,8 @@
-use crate::db::establish_connection;
+use diesel::sqlite::SqliteConnection;use crate::db::establish_connection;
 
-pub fn create_user(username: &str, password: &str) {
+pub fn create_user(_connection: &SqliteConnection, username: &str, password: &str) {
     println!("Creating user: {} with password: {}", username, password);
     let _conn = establish_connection();
-    // Insert user logic here
 }
 
 pub fn start_fasting(user_id: i32) {

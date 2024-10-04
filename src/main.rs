@@ -42,7 +42,7 @@ fn main() {
     match args.command {
         Command::Register { username, password } => {
             println!("Registering user: {} with password: {}", username, password);
-            create_user(&username, &password); // Ensure the correct function signature
+            create_user(&_connection, &username, &password); // Ensure the correct function signature
         }
         Command::Login { username, password } => {
             println!(
