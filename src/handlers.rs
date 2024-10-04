@@ -1,4 +1,6 @@
 use diesel::sqlite::SqliteConnection;use crate::db::establish_connection;
+use crate::schema::users;
+use crate::schema::fasting_sessions;
 
 pub fn create_user(_connection: &SqliteConnection, username: &str, password: &str) {
     println!("Creating user: {} with password: {}", username, password);
