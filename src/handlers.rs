@@ -1,3 +1,4 @@
+mod schema;
 use diesel::sqlite::SqliteConnection;use crate::db::establish_connection;
 use schema::users;
 use schema::fasting_sessions;
