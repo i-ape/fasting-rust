@@ -3,12 +3,15 @@
 use dotenv::dotenv;
 use std::env;
 
-mod db; // Declares the `db` module (from src/db.rs)
-mod handlers; // Declares the `handlers` module (from src/handlers.rs)
+mod schema;  // Declares the `schema` module (from src/schema.rs)
+mod db;
+mod handlers;
+mod models; // Declares the `handlers` module (from src/handlers.rs)
 
 use crate::db::establish_connection;
 use crate::handlers::{create_user, start_fasting, stop_fasting};
 use structopt::StructOpt;
+
 
 #[derive(StructOpt)]
 struct Cli {
