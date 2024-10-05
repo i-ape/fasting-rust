@@ -8,8 +8,8 @@ mod db;
 mod handlers;
 mod models; // Declares the `handlers` module (from src/handlers.rs)
 
-use crate::db::establish_connection;
-use crate::handlers::{create_user, start_fasting, stop_fasting};
+use db::establish_connection;
+use handlers::{create_user, start_fasting, stop_fasting};
 use structopt::StructOpt;
 
 
