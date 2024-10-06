@@ -10,8 +10,8 @@ pub fn create_user(_connection: &SqliteConnection, username: &str, password: &st
     println!("Creating user: {} with password: {}", username, password);
     let _conn = establish_connection();
 
-    diesel::insert_into(users)
-        .values(&new_user)
+    diesel::insert_into(User)
+        .values(&NewUser)
         .execute(_conn)
         .expect("Error creating user");
 }
