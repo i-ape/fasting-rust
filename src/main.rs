@@ -1,12 +1,13 @@
-//extern crate dotenv;
-//use diesel::connection;
+extern crate diesel;
+extern crate dotenv;
+
 use dotenv::dotenv;
 use std::env;
 
-mod schema;  // Declares the `schema` module (from src/schema.rs)
-mod db;
-mod handlers;
-mod models; // Declares the `handlers` module (from src/handlers.rs)
+mod schema;      // Declares schema.rs
+mod handlers;    // Declares handlers.rs
+mod models;      // Declares models.rs
+mod db;          // Declares db.rs
 
 use db::establish_connection;
 use handlers::{create_user, start_fasting, stop_fasting};

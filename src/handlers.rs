@@ -1,7 +1,10 @@
-mod schema;
-use diesel::sqlite::SqliteConnection;use crate::db::establish_connection;
-use schema::users;
-use schema::fasting_sessions;
+use diesel::prelude::*;
+use crate::schema::users;
+use crate::db::establish_connection;
+use crate::models::{NewUser, User};
+
+// Function implementations
+
 
 pub fn create_user(_connection: &SqliteConnection, username: &str, password: &str) {
     println!("Creating user: {} with password: {}", username, password);
