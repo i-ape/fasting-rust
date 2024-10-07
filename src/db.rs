@@ -1,5 +1,6 @@
 use diesel::sqlite::SqliteConnection;
 use diesel::r2d2::{ConnectionManager, Pool};
+use diesel::Connection;
 use std::env;
 use dotenv::dotenv;
 

@@ -12,3 +12,5 @@ vscode
 diesel
 sqlite
 cheats.rs rust info mainly for importing crates and other documentation
+
+currently i have the issues with variables and having consistant info in them between all the files, next i must debug and proceed,
