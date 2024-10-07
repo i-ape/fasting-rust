@@ -1,25 +1,53 @@
 use diesel::prelude::*;
-//use crate::schema::users;
 use crate::db::establish_connection;
-use crate::models::{NewUser, User};
+use crate::models::{User, NewUser, FastingSession};
+use crate::schema::users::dsl::*;
+use crate::schema::fasting_sessions::dsl::*;
+use diesel::insert_into;
+use bcrypt::{hash, verify};
 
-// Function implementations
+// Create a new user and insert into the database
+pub fn create_user(conn: &SqliteConnection, username: &str, password: &str) -> Result<User, diesel::result::Error> {
+    let hashed_password = hash(password, 4).unwrap();  // Hash password with bcrypt
+    let new_user = NewUser { username: username.to_string(), password: hashed_password };
 
+    insert_into(users)
+        .values(&new_user)
+        .execute(conn)?;
 
-pub fn create_user(_connection: &SqliteConnection, username: &str, password: &str) {
-    println!("Creating user: {} with password: {}", username, password);
-    let _conn = establish_connection();
-
-    diesel::insert_into(User)
-        .values(&NewUser)
-        .execute(_conn)
-        .expect("Error creating user");
+    // Retrieve and return the newly created user
+    users.order(id.desc()).first(conn)
 }
 
-pub fn start_fasting(user_id: i32) {
-    println!("Starting fasting session for user ID: {}", user_id);
+// Login user by verifying the password
+pub fn login_user(conn: &SqliteConnection, username: &str, password: &str) -> Result<User, &'static str> {
+    let user: User = users.filter(username.eq(username)).first(conn).map_err(|_| "User not found")?;
+    if verify(password, &user.password).unwrap() {
+        Ok(user)
+    } else {
+        Err("Invalid password")
+    }
 }
 
-pub fn stop_fasting(session_id: i32) {
-    println!("Stopping fasting session for session ID: {}", session_id);
+// Start a fasting session for a user
+pub fn start_fasting(conn: &SqliteConnection, user_id: i32) -> Result<FastingSession, diesel::result::Error> {
+    let new_session = FastingSession { user_id, start_time: chrono::Utc::now().naive_utc(), end_time: None };
+    insert_into(fasting_sessions)
+        .values(&new_session)
+        .execute(conn)?;
+
+    // Retrieve and return the newly created session
+    fasting_sessions.order(id.desc()).first(conn)
+}
+
+// Stop an active fasting session by setting the end time
+pub fn stop_fasting(conn: &SqliteConnection, session_id: i32) -> Result<FastingSession, diesel::result::Error> {
+    use crate::schema::fasting_sessions::dsl::{end_time, id as session_id_column};
+
+    diesel::update(fasting_sessions.filter(session_id_column.eq(session_id)))
+        .set(end_time.eq(Some(chrono::Utc::now().naive_utc())))
+        .execute(conn)?;
+
+    // Return the updated session
+    fasting_sessions.filter(session_id_column.eq(session_id)).first(conn)
 }

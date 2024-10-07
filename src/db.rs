@@ -1,14 +1,21 @@
-use diesel::prelude::*;
-//use diesel::r2d2::*;
-//use dotenv::dotenv;
+use diesel::sqlite::SqliteConnection;
+use diesel::r2d2::{ConnectionManager, Pool};
 use std::env;
-use diesel::SqliteConnection;
+use dotenv::dotenv;
 
-// Function to establish a database connection
+type DbPool = Pool<ConnectionManager<SqliteConnection>>;
 
-
+// Establishes a connection to the SQLite database
 pub fn establish_connection() -> SqliteConnection {
+    dotenv().ok();
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    SqliteConnection::establish(&database_url)
-        .unwrap_or_else(|_| panic!("Error connecting to {}", database_url))
+    SqliteConnection::establish(&database_url).expect(&format!("Error connecting to {}", database_url))
+}
+
+// Pool-based connection for multithreaded applications
+pub fn establish_pool() -> DbPool {
+    dotenv().ok();
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let manager = ConnectionManager::<SqliteConnection>::new(database_url);
+    Pool::builder().build(manager).expect("Failed to create pool.")
 }

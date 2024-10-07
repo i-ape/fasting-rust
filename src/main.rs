@@ -1,18 +1,14 @@
 extern crate diesel;
 extern crate dotenv;
 
-use dotenv::dotenv;
-use std::env;
+mod db;
+mod handlers;
+mod models;
+mod schema;
 
-mod schema;      // Declares schema.rs
-mod handlers;    // Declares handlers.rs
-mod models;      // Declares models.rs
-mod db;          // Declares db.rs
-
-use db::establish_connection;
-use handlers::{create_user, start_fasting, stop_fasting};
+use crate::db::establish_connection;
+use crate::handlers::{create_user, login_user, start_fasting, stop_fasting};
 use structopt::StructOpt;
-
 
 #[derive(StructOpt)]
 struct Cli {
@@ -29,39 +25,35 @@ enum Command {
 }
 
 fn main() {
-    // Load environment variables from .env file
-    dotenv().ok();
+    dotenv::dotenv().ok();
 
-    // Retrieve the database URL and establish the connection
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    println!("Using database URL: {}", database_url);
-
-    // Establish the connection to the database
-    let _connection = establish_connection();
-
-    // Parse command-line arguments
+    let connection = establish_connection();
     let args = Cli::from_args();
 
-    // Match and execute the relevant subcommand
     match args.command {
         Command::Register { username, password } => {
-            println!("Registering user: {} with password: {}", username, password);
-            create_user(&_connection, &username, &password); // Ensure the correct function signature
+            match create_user(&connection, &username, &password) {
+                Ok(user) => println!("Successfully registered user: {}", user.username),
+                Err(err) => println!("Error creating user: {:?}", err),
+            }
         }
         Command::Login { username, password } => {
-            println!(
-                "Attempting to log in user: {} with password: {}",
-                username, password
-            );
-            // Implement login logic here
+            match login_user(&connection, &username, &password) {
+                Ok(user) => println!("User {} logged in successfully", user.username),
+                Err(err) => println!("Login failed: {:?}", err),
+            }
         }
         Command::StartFasting { user_id } => {
-            println!("Starting fasting session for user ID: {}", user_id);
-            start_fasting(user_id); // Pass user_id directly
+            match start_fasting(&connection, user_id) {
+                Ok(session) => println!("Started fasting session with ID: {}", session.id),
+                Err(err) => println!("Error starting session: {:?}", err),
+            }
         }
         Command::StopFasting { session_id } => {
-            println!("Stopping fasting session with ID: {}", session_id);
-            stop_fasting(session_id); // Ensure the correct function signature
+            match stop_fasting(&connection, session_id) {
+                Ok(session) => println!("Stopped fasting session with ID: {}", session.id),
+                Err(err) => println!("Error stopping session: {:?}", err),
+            }
         }
     }
 }
