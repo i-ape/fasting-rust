@@ -13,7 +13,7 @@ diesel::table! {
     users (id) {
         id -> Nullable<Integer>,
         username -> Text,
-        hashed_password -> Text,
+        password -> Text,
         created_at -> Nullable<Timestamp>,
     }
 }
