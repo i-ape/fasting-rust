@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 #[table_name = "users"]
 pub struct NewUser<'a> {
     pub username: &'a str,
-    pub hashed_password: &'a str,
+    pub password: &'a str,
 }
 #[derive(Queryable, Serialize, Deserialize)]
 pub struct User {
