@@ -4,7 +4,7 @@ with this app my goal is to make a full application for fasting
 
 this is the largest of the apps i have seen and i hope it goes well :)
 
-# tools i used for this
+## tools i used for this
 
 ill add more as i think of them
 chatgpt
