@@ -43,17 +43,13 @@ fn main() {
                 Err(err) => println!("Login failed: {:?}", err),
             }
         }
-        Command::StartFasting { user_id } => {
-            match start_fasting(&connection, user_id) {
-                Ok(session) => println!("Started fasting session with ID: {}", session.id),
-                Err(err) => println!("Error starting session: {:?}", err),
-            }
-        }
-        Command::StopFasting { session_id } => {
-            match stop_fasting(&connection, session_id) {
-                Ok(session) => println!("Stopped fasting session with ID: {}", session.id),
-                Err(err) => println!("Error stopping session: {:?}", err),
-            }
-        }
+        Command::StartFasting { user_id } => match start_fasting(&connection, user_id) {
+            Ok(session) => println!("Started fasting session with ID: {}", session.id),
+            Err(err) => println!("Error starting session: {:?}", err),
+        },
+        Command::StopFasting { session_id } => match stop_fasting(&connection, session_id) {
+            Ok(session) => println!("Stopped fasting session with ID: {}", session.id),
+            Err(err) => println!("Error stopping session: {:?}", err),
+        },
     }
 }
