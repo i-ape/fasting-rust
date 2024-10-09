@@ -14,9 +14,14 @@ pub struct User {
 // Structure for inserting new users
 #[derive(Insertable)]
 #[table_name = "users"]
-pub struct NewUser {
+#[derive(Queryable)]
+pub struct User {
+    pub id: Option<i32>,            // Nullable ID field
     pub username: String,
     pub password: String,
+    pub created_at: Option<NaiveDateTime>, // Assuming `created_at` is a nullable field
+}
+
 }
 
 // FastingSession table model
