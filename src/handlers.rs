@@ -17,7 +17,7 @@ pub fn start_fasting(
     let new_session = NewFastingSession { user_id, start_time, end_time: None };
     insert_into(fasting_sessions::table)
         .values(&new_session)
-        .execute(conn)?;
+        .execute(u)?;
 
     fasting_sessions::table.order(fasting_sessions::id.desc()).first(conn)
 }
