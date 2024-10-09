@@ -9,20 +9,16 @@ pub struct User {
     pub id: i32,
     pub username: String,
     pub password: String,
+    pub created_at: Option<NaiveDateTime>, 
 }
-
-// Structure for inserting new users
 #[derive(Insertable)]
 #[table_name = "users"]
-#[derive(Queryable)]
-pub struct User {
-    pub id: Option<i32>,            // Nullable ID field
+pub struct NewUser {
     pub username: String,
     pub password: String,
-    pub created_at: Option<NaiveDateTime>, // Assuming `created_at` is a nullable field
 }
 
-}
+
 
 // FastingSession table model
 #[derive(Queryable)]
