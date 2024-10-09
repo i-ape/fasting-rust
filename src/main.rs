@@ -28,44 +28,47 @@ enum Command {
 fn main() {
     dotenv::dotenv().ok();
 
-    let connection = establish_connection();
+    // Establish the database connection
+    let mut connection = establish_connection();
     let args = Cli::from_args();
 
     match args.command {
         Command::Register { username, password } => {
-            match create_user(&connection, &username, &password) {
+            match create_user(&mut connection, &username, &password) {
                 Ok(user) => println!("Successfully registered user: {}", user.username),
                 Err(err) => println!("Error creating user: {:?}", err),
             }
         }
         Command::Login { username, password } => {
-            match login_user(&connection, &username, &password) {
+            match login_user(&mut connection, &username, &password) {
                 Ok(user) => println!("User {} logged in successfully", user.username),
                 Err(err) => println!("Login failed: {:?}", err),
             }
         }
-        Command::StartFasting { user_id } => match start_fasting(&connection, user_id) {
+        Command::StartFasting { user_id } => match start_fasting(&mut connection, user_id) {
             Ok(session) => println!("Started fasting session with ID: {}", session.id),
             Err(err) => println!("Error starting session: {:?}", err),
         },
-        Command::StopFasting { session_id } => match stop_fasting(&connection, session_id) {
+        Command::StopFasting { session_id } => match stop_fasting(&mut connection, session_id) {
             Ok(session) => println!("Stopped fasting session with ID: {}", session.id),
             Err(err) => println!("Error stopping session: {:?}", err),
         },
-        Command::SessionHistory { user_id } => match get_session_history(&connection, user_id) {
-            Ok(sessions) => {
-                println!("Fasting history for user ID: {}", user_id);
-                for session in sessions {
-                    let start = session.start_time;
-                    let end = session.end_time.unwrap_or(Utc::now().naive_utc());
-                    let duration = handlers::calculate_session_duration(start, end);
-                    println!(
-                        "Session ID: {}, Start: {}, End: {}, Duration: {}",
-                        session.id, start, end, duration
-                    );
+        Command::SessionHistory { user_id } => {
+            match get_session_history(&mut connection, user_id) {
+                Ok(sessions) => {
+                    println!("Fasting history for user ID: {}", user_id);
+                    for session in sessions {
+                        let start = session.start_time;
+                        let end = session.end_time.unwrap_or(Utc::now().naive_utc());
+                        let duration = handlers::calculate_session_duration(start, end);
+                        println!(
+                            "Session ID: {}, Start: {}, End: {}, Duration: {}",
+                            session.id, start, end, duration
+                        );
+                    }
                 }
+                Err(err) => println!("Error retrieving session history: {:?}", err),
             }
-            Err(err) => println!("Error retrieving session history: {:?}", err),
-        },
+        }
     }
 }
