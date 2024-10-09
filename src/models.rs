@@ -34,5 +34,6 @@ pub struct FastingSession {
 pub struct NewFastingSession {
     pub user_id: i32,
     pub start_time: NaiveDateTime,
-    pub end_time: Option<NaiveDateTime>,
+    pub end_time: Option<NaiveDateTime>, // This is crucial for `Nullable<Timestamp>`
 }
+
