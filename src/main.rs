@@ -7,7 +7,7 @@ mod models;
 mod schema;
 
 use crate::db::establish_connection;
-use crate::handlers::{create_user, login_user, start_fasting, stop_fasting};
+use crate::handlers::{create_user, get_session_history, login_user, start_fasting, stop_fasting};
 use structopt::StructOpt;
 
 #[derive(StructOpt)]
@@ -22,6 +22,7 @@ enum Command {
     Login { username: String, password: String },
     StartFasting { user_id: i32 },
     StopFasting { session_id: i32 },
+    SessionHistory { user_id: i32 },
 }
 
 fn main() {
@@ -50,6 +51,21 @@ fn main() {
         Command::StopFasting { session_id } => match stop_fasting(&connection, session_id) {
             Ok(session) => println!("Stopped fasting session with ID: {}", session.id),
             Err(err) => println!("Error stopping session: {:?}", err),
+        },
+        Command::SessionHistory { user_id } => match get_session_history(&connection, user_id) {
+            Ok(sessions) => {
+                println!("Fasting history for user ID: {}", user_id);
+                for session in sessions {
+                    let start = session.start_time;
+                    let end = session.end_time.unwrap_or(Utc::now().naive_utc());
+                    let duration = handlers::calculate_session_duration(start, end);
+                    println!(
+                        "Session ID: {}, Start: {}, End: {}, Duration: {}",
+                        session.id, start, end, duration
+                    );
+                }
+            }
+            Err(err) => println!("Error retrieving session history: {:?}", err),
         },
     }
 }
