@@ -6,7 +6,7 @@ use std::env;
 mod db;
 mod handlers;
 mod models;
-mod schema; // Include the schema
+mod schema;
 
 use crate::db::establish_connection;
 use crate::handlers::{create_user, login_user, start_fasting, stop_fasting};
@@ -30,12 +30,12 @@ fn main() {
     // Load environment variables from .env file
     dotenv().ok();
 
-    // Establish the connection to the database
+    // Retrieve the database URL and establish the connection
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     println!("Using database URL: {}", database_url);
 
-    // Establish the connection to the database
-    let mut connection = establish_connection();
+    // Establish the connection to the database as mutable
+    let mut conn = establish_connection();
 
     // Parse command-line arguments
     let args = Cli::from_args();
@@ -44,40 +44,20 @@ fn main() {
     match args.command {
         Command::Register { username, password } => {
             println!("Registering user: {} with password: {}", username, password);
-            match create_user(&mut connection, &username, &password) {
-                Ok(user) => println!("User registered successfully with ID: {}", user.id),
-                Err(e) => eprintln!("Error registering user: {}", e),
-            }
+            // Call the create_user function with a mutable reference to the connection
+            create_user(&mut connection, &username, &password).expect("Error creating user");
         }
         Command::Login { username, password } => {
-            println!(
-                "Attempting to log in user: {} with password: {}",
-                username, password
-            );
-            match login_user(&mut connection, &username, &password) {
-                Ok(is_valid) => {
-                    if is_valid {
-                        println!("Login successful!");
-                    } else {
-                        println!("Invalid credentials.");
-                    }
-                }
-                Err(e) => eprintln!("Error logging in: {}", e),
-            }
+            println!("Attempting to log in user: {} with password: {}", username, password);
+            // Implement login logic here
         }
         Command::StartFasting { user_id } => {
             println!("Starting fasting session for user ID: {}", user_id);
-            match start_fasting(&mut connection, user_id) {
-                Ok(session) => println!("Started fasting session with ID: {}", session.id),
-                Err(e) => eprintln!("Error starting fasting session: {}", e),
-            }
+            start_fasting(&mut connection, user_id).expect("Error starting fasting session");
         }
         Command::StopFasting { session_id } => {
             println!("Stopping fasting session with ID: {}", session_id);
-            match stop_fasting(&mut connection, session_id) {
-                Ok(session) => println!("Stopped fasting session with ID: {}", session.id),
-                Err(e) => eprintln!("Error stopping fasting session: {}", e),
-            }
+            stop_fasting(&mut connection, session_id).expect("Error stopping fasting session");
         }
     }
 }
