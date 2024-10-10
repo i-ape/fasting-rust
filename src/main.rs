@@ -1,16 +1,20 @@
-extern crate bcrypt;
-extern crate dotenv;
-use dotenv::dotenv;
-use std::env;
+// Bring in external crates
+extern crate bcrypt; // for password hashing
+extern crate dotenv; // for loading environment variables
 
-mod db;
-mod handlers;
-mod models;
-mod schema;
+use dotenv::dotenv; // Import dotenv function for loading environment variables
+use std::env; // Import std::env for environment variable access
+use structopt::StructOpt; // For command-line argument parsing
 
-use crate::db::establish_connection;
-use crate::handlers::{create_user, login_user, start_fasting, stop_fasting};
-use structopt::StructOpt;
+// Module declarations for your project
+mod db; // Declares the `db` module (from src/db.rs)
+mod handlers; // Declares the `handlers` module (from src/handlers.rs)
+mod models; // Declares the `models` module (from src/models.rs)
+mod schema; // Declares the `schema` module (from src/schema.rs)
+
+// Import functions from the modules
+use crate::db::establish_connection; // Function to establish a database connection
+use crate::handlers::{create_user, login_user, start_fasting, stop_fasting}; // Import necessary handler functions
 
 #[derive(StructOpt)]
 struct Cli {
@@ -53,6 +57,7 @@ fn main() {
                 username, password
             );
             // Implement login logic here
+            login_user(&mut connection, &username, &password).expect("Error logging in user");
         }
         Command::StartFasting { user_id } => {
             println!("Starting fasting session for user ID: {}", user_id);
