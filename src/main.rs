@@ -35,7 +35,7 @@ fn main() {
     println!("Using database URL: {}", database_url);
 
     // Establish the connection to the database as mutable
-    let mut conn = establish_connection();
+    let mut connection = establish_connection();
 
     // Parse command-line arguments
     let args = Cli::from_args();
@@ -48,7 +48,10 @@ fn main() {
             create_user(&mut connection, &username, &password).expect("Error creating user");
         }
         Command::Login { username, password } => {
-            println!("Attempting to log in user: {} with password: {}", username, password);
+            println!(
+                "Attempting to log in user: {} with password: {}",
+                username, password
+            );
             // Implement login logic here
         }
         Command::StartFasting { user_id } => {

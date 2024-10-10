@@ -1,3 +1,4 @@
+use diesel::connection;
 use diesel::prelude::*;
 use diesel::RunQueryDsl;
 
@@ -19,5 +20,5 @@ pub fn create_user(
     // Insert the new user into the `users` table
     diesel::insert_into(users::table)
         .values(&new_user)
-        .execute(conn)
+        .execute(connection)
 }
