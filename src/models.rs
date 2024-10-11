@@ -1,16 +1,15 @@
 use crate::schema::{fasting_sessions, users};
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
-use diesel::Insertable;
-use diesel::Queryable;
+use diesel::{Insertable, Queryable};
 
-// User table model
+// Users table model
 #[derive(Queryable)]
 pub struct User {
-    pub id: Option<i32>, // Since the ID is nullable in the schema, make it `Option<i32>`
+    pub id: Option<i32>, // The id is nullable in your schema
     pub username: String,
-    pub hashed_password: String, // Match the field name in your schema
-    pub created_at: Option<NaiveDateTime>, // Match nullable `created_at`
+    pub hashed_password: String,
+    pub created_at: Option<NaiveDateTime>, // Nullable in schema
 }
 
 // Structure for inserting new users
@@ -24,10 +23,10 @@ pub struct NewUser {
 // FastingSession table model
 #[derive(Queryable)]
 pub struct FastingSession {
-    pub id: Option<i32>, // Match the nullable ID from the schema
+    pub id: Option<i32>, // The id is nullable in your schema
     pub user_id: i32,
     pub start_time: NaiveDateTime,
-    pub end_time: Option<NaiveDateTime>, // Nullable in the schema
+    pub end_time: Option<NaiveDateTime>, // Nullable in schema
 }
 
 // Structure for inserting new fasting sessions

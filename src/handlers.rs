@@ -1,11 +1,11 @@
+use bcrypt::{hash, verify};
 use diesel::prelude::*;
-use diesel::RunQueryDsl;
-use bcrypt::{hash, verify}; // Import bcrypt for password hashing
+use diesel::RunQueryDsl; // Use bcrypt for password hashing
 
 use crate::models::{NewUser, User};
-use crate::schema::users; // Import `users` table schema
-use crate::schema::users::dsl::*; // Simplify referencing `users` columns
 use crate::schema::fasting_sessions;
+use crate::schema::users; // Import the `users` table schema
+use crate::schema::users::dsl::*; // Simplify referencing columns in `users` table
 use chrono::NaiveDateTime;
 
 /// Create a new user and insert it into the database
@@ -19,20 +19,24 @@ pub fn create_user(
 
     let new_user = NewUser {
         username: username.to_string(),
-        hashed_password, // Use hashed_password, as per schema
+        hashed_password, // Correctly use `hashed_password` from the schema
     };
 
     // Insert the new user into the `users` table
     diesel::insert_into(users::table)
         .values(&new_user)
-        .execute(conn) // Use `conn` instead of `connection`
+        .execute(conn) // Use `conn` for the established connection
 }
 
 /// Log in a user by verifying their username and password
-pub fn login_user(conn: &SqliteConnection, input_username: &str, input_password: &str) -> Result<bool, diesel::result::Error> {
+pub fn login_user(
+    conn: &SqliteConnection,
+    input_username: &str,
+    input_password: &str,
+) -> Result<bool, diesel::result::Error> {
     // Find the user by username
     let user: User = users
-        .filter(username.eq(input_username))
+        .filter(username.eq(input_username)) // Use `username` from the schema
         .first(conn)?;
 
     // Verify the password
@@ -41,7 +45,10 @@ pub fn login_user(conn: &SqliteConnection, input_username: &str, input_password:
 }
 
 /// Start a fasting session for a user
-pub fn start_fasting(conn: &SqliteConnection, user_id: i32) -> Result<usize, diesel::result::Error> {
+pub fn start_fasting(
+    conn: &SqliteConnection,
+    user_id: i32,
+) -> Result<usize, diesel::result::Error> {
     use crate::models::NewFastingSession;
 
     let new_session = NewFastingSession {
@@ -57,7 +64,10 @@ pub fn start_fasting(conn: &SqliteConnection, user_id: i32) -> Result<usize, die
 }
 
 /// Stop a fasting session by setting the `end_time`
-pub fn stop_fasting(conn: &SqliteConnection, session_id: i32) -> Result<usize, diesel::result::Error> {
+pub fn stop_fasting(
+    conn: &SqliteConnection,
+    session_id: i32,
+) -> Result<usize, diesel::result::Error> {
     use crate::schema::fasting_sessions::dsl::*;
 
     diesel::update(fasting_sessions.filter(id.eq(session_id)))
