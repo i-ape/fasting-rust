@@ -29,8 +29,8 @@ pub fn create_user(
 /// Log in a user by verifying their username and password
 pub fn login_user(
     conn: &SqliteConnection,
-    input_username: &str,
-    input_password: &str,
+    username: &str,
+    password: &str,
 ) -> Result<bool, diesel::result::Error> {
     let user: User = users.filter(username.eq(input_username)).first(conn)?;
 

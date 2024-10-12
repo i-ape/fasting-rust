@@ -7,7 +7,7 @@ use diesel::sql_types::{Nullable, Timestamp};
 #[derive(Queryable, Debug)]
 pub struct User {
     pub id: i32,
-    pub username: String,
+    pub username: &str,
     pub hashed_password: String,
     pub created_at: Option<NaiveDateTime>, // Nullable timestamp field
 }
