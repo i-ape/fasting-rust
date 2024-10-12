@@ -6,7 +6,7 @@ use crate::models::{NewUser, User};
 use crate::schema::fasting_sessions;
 use crate::schema::users;
 use crate::schema::users::dsl::*; // Using `dsl` to simplify references to columns
-//use chrono::NaiveDateTime;
+                                  //use chrono::NaiveDateTime;
 
 /// Create a new user and insert it into the database
 pub fn create_user(
@@ -18,7 +18,7 @@ pub fn create_user(
 
     let new_user = NewUser {
         username: username.to_string(),
-        hashed_password,
+        password: password.to_string(),
     };
 
     diesel::insert_into(users::table)
