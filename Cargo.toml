@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-diesel = { version = "2.2.4", features = ["r2d2", "sqlite"] }
+diesel = { version = "2.2.4", features = ["r2d2", "sqlite","chrono"] }
 libsqlite3-sys = "0.25.1"
 dotenv = "0.15"
 bcrypt = "0.10"

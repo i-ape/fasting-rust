@@ -2,7 +2,7 @@ extern crate bcrypt;
 extern crate dotenv;
 
 use dotenv::dotenv;
-use std::env;
+//use std::env;
 
 mod db;
 mod handlers;
@@ -11,7 +11,7 @@ mod schema;
 
 use crate::db::establish_connection;
 use crate::handlers::{create_user, login_user, start_fasting, stop_fasting};
-use structopt::StructOpt;
+//use structopt::StructOpt;
 
 fn main() {
     dotenv().ok();
