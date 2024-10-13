@@ -1,67 +1,73 @@
-use bcrypt::{hash, verify};
+use bcrypt::{hash, verify, DEFAULT_COST};
 use diesel::prelude::*;
-use diesel::RunQueryDsl;
+use diesel::SqliteConnection;
 
-use crate::models::{NewUser, User};
-use crate::schema::fasting_sessions;
-use crate::schema::users;
-use crate::schema::users::dsl::*; // Using `dsl` to simplify references to columns
-                                  //use chrono::NaiveDateTime;
+use crate::models::{FastingEvent, NewFastingEvent, NewUser, User};
+use crate::schema::fasting_events::dsl::*;
+use crate::schema::users::dsl::*;
+use chrono::{NaiveDateTime, Utc};
 
-/// Create a new user and insert it into the database
+/// Create a new user in the database, with hashed password
 pub fn create_user(
     conn: &SqliteConnection,
     username: &str,
     password: &str,
 ) -> Result<usize, diesel::result::Error> {
-    let hashed_password = hash(password, 4).expect("Error hashing password");
+    // Hash the password before storing it
+    let hashed_password = hash(password, DEFAULT_COST).expect("Error hashing password");
 
     let new_user = NewUser {
         username: username.to_string(),
-        password: password.to_string(),
+        hashed_password,
     };
 
-    diesel::insert_into(users::table)
-        .values(&new_user)
-        .execute(conn)
+    diesel::insert_into(users).values(&new_user).execute(conn)
 }
 
-/// Log in a user by verifying their username and password
+/// Log in the user by verifying the username and password
 pub fn login_user(
     conn: &SqliteConnection,
-    username: &str,
-    password: &str,
-) -> Result<bool, diesel::result::Error> {
-    let user: User = users.filter(username.eq(input_username)).first(conn)?;
+    username_input: &str,
+    password_input: &str,
+) -> Result<User, diesel::result::Error> {
+    // Query for the user by username
+    let user = users
+        .filter(username.eq(username_input))
+        .first::<User>(conn)?;
 
-    let is_password_valid = verify(input_password, &user.hashed_password).unwrap();
-    Ok(is_password_valid)
+    // Verify the password
+    if verify(password_input, &user.hashed_password).unwrap_or(false) {
+        Ok(user)
+    } else {
+        Err(diesel::result::Error::NotFound)
+    }
 }
 
-/// Start a fasting session for a user
+/// Start fasting event for a user
 pub fn start_fasting(
     conn: &SqliteConnection,
-    user_id: i32,
+    user_id_input: i32,
+    start_time: NaiveDateTime,
 ) -> Result<usize, diesel::result::Error> {
-    let new_session = crate::models::NewFastingSession {
-        user_id,
-        start_time: chrono::Utc::now().naive_utc(),
-        end_time: None,
+    let new_event = NewFastingEvent {
+        user_id: user_id_input,
+        start_time,
+        end_time: None, // fast is ongoing
     };
 
-    diesel::insert_into(fasting_sessions::table)
-        .values(&new_session)
+    diesel::insert_into(fasting_events)
+        .values(&new_event)
         .execute(conn)
 }
 
-/// Stop a fasting session by setting the `end_time`
+/// Stop fasting event for a user (marks the end of a fast)
 pub fn stop_fasting(
     conn: &SqliteConnection,
-    session_id: i32,
+    event_id: i32,
+    stop_time: NaiveDateTime,
 ) -> Result<usize, diesel::result::Error> {
-    diesel::update(
-        fasting_sessions::dsl::fasting_sessions.filter(fasting_sessions::dsl::id.eq(session_id)),
-    )
-    .set(fasting_sessions::dsl::end_time.eq(Some(chrono::Utc::now().naive_utc())))
-    .execute(conn)
+    // Update the fasting event, setting the end_time to stop_time
+    diesel::update(fasting_events.find(event_id))
+        .set(end_time.eq(Some(stop_time)))
+        .execute(conn)
 }
