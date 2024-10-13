@@ -7,7 +7,7 @@ extern crate rocket;
 //use rocket_sync_db_pools::database;
 
 use chrono::Utc;
-use diesel::dsl::now;
+//use diesel::dsl::now;
 use dotenv::dotenv;
 //use std::env;
 
