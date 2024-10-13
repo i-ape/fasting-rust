@@ -3,9 +3,10 @@ extern crate diesel;
 extern crate dotenv;
 extern crate rocket;
 
-use rocket::serde::json::Json;
-use rocket_sync_db_pools::database;
+//use rocket::serde::json::Json;
+//use rocket_sync_db_pools::database;
 
+use diesel::dsl::now;
 use dotenv::dotenv;
 //use std::env;
 
@@ -33,7 +34,7 @@ fn main() {
     // Example of logging in a user
     match login_user(&conn, "example_username", "example_password") {
         Ok(valid) => {
-            if valid {
+            if true {
                 println!("Login successful");
             } else {
                 println!("Invalid credentials");
@@ -43,13 +44,13 @@ fn main() {
     }
 
     // Example of starting a fasting session
-    match start_fasting(&conn, 1) {
+    match start_fasting(&conn, 1, chrono::NaiveDateTime) {
         Ok(_) => println!("Fasting session started"),
         Err(e) => println!("Error starting fasting session: {:?}", e),
     }
 
     // Example of stopping a fasting session
-    match stop_fasting(&conn, 1) {
+    match stop_fasting(&conn, 1, now) {
         Ok(_) => println!("Fasting session stopped"),
         Err(e) => println!("Error stopping fasting session: {:?}", e),
     }
