@@ -1,5 +1,10 @@
 extern crate bcrypt;
+extern crate diesel;
 extern crate dotenv;
+extern crate rocket;
+
+use rocket::serde::json::Json;
+use rocket_sync_db_pools::database;
 
 use dotenv::dotenv;
 //use std::env;
