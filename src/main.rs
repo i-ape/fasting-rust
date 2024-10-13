@@ -6,6 +6,7 @@ extern crate rocket;
 //use rocket::serde::json::Json;
 //use rocket_sync_db_pools::database;
 
+use chrono::Utc;
 use diesel::dsl::now;
 use dotenv::dotenv;
 //use std::env;
@@ -44,13 +45,13 @@ fn main() {
     }
 
     // Example of starting a fasting session
-    match start_fasting(&conn, 1, chrono::NaiveDateTime) {
+    match start_fasting(&conn, 1, Utc::now().naive_utc()) {
         Ok(_) => println!("Fasting session started"),
         Err(e) => println!("Error starting fasting session: {:?}", e),
     }
 
     // Example of stopping a fasting session
-    match stop_fasting(&conn, 1, now) {
+    match stop_fasting(&conn, 1, Utc::now().naive_utc()) {
         Ok(_) => println!("Fasting session stopped"),
         Err(e) => println!("Error stopping fasting session: {:?}", e),
     }
