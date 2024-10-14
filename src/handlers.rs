@@ -9,7 +9,7 @@ use chrono::{NaiveDateTime, Utc};
 
 /// Create a new user in the database, with hashed password
 pub fn create_user(
-    conn: &SqliteConnection, 
+    conn: &SqliteConnection,
     username_input: &str,
     password_input: &str,
 ) -> Result<usize, diesel::result::Error> {
@@ -21,7 +21,7 @@ pub fn create_user(
         hashed_password: str,
     };
 
-    diesel::insert_into(users).values(&new_user).execute(conn)
+    diesel::insert_into(users).values(&new_user).execute(&conn)
 }
 
 /// Log in the user by verifying the username and password
