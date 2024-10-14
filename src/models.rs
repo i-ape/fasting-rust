@@ -39,5 +39,5 @@ pub struct FastingEvent {
 pub struct NewFastingEvent {
     pub user_id: i32,
     pub start_time: NaiveDateTime,
-    pub end_time: Option<NaiveDateTime>, // `None` when the fast starts
+    pub stop_time: Option<NaiveDateTime>, // `None` when the fast starts
 }

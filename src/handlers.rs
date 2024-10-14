@@ -9,16 +9,16 @@ use chrono::{NaiveDateTime, Utc};
 
 /// Create a new user in the database, with hashed password
 pub fn create_user(
-    conn: &SqliteConnection,
-    username: &str,
-    password: &str,
+    conn: &SqliteConnection, 
+    username_input: &str,
+    password_input: &str,
 ) -> Result<usize, diesel::result::Error> {
     // Hash the password before storing it
     let hashed_password = hash(password, DEFAULT_COST).expect("Error hashing password");
 
     let new_user = NewUser {
-        username: username.to_string(),
-        password: hashed_password,
+        username_input: &str,
+        password_input: &str,
     };
 
     diesel::insert_into(users).values(&new_user).execute(conn)
