@@ -34,7 +34,7 @@ fn main() {
 
     // Example of logging in a user
     match login_user(&conn, "example_username", "example_password") {
-        Ok(valid) => {
+        Ok(_valid) => {
             if true {
                 println!("Login successful");
             } else {

@@ -1,7 +1,7 @@
 use crate::schema::{fasting_events, users};
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
-use diesel::sqlite::SqliteConnection;
+//use diesel::sqlite::SqliteConnection;
 use diesel::{Identifiable, Insertable, Queryable};
 
 /// Represents a user in the `users` table.
