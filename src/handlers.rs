@@ -17,8 +17,8 @@ pub fn create_user(
     let hashed_password = hash(password, DEFAULT_COST).expect("Error hashing password");
 
     let new_user = NewUser {
-        username_input: &str,
-        password_input: &str,
+        username: str,
+        hashed_password: str,
     };
 
     diesel::insert_into(users).values(&new_user).execute(conn)
