@@ -9,6 +9,7 @@ extern crate rocket;
 use chrono::Utc;
 //use diesel::dsl::now;
 use dotenv::dotenv;
+use schema::fasting_events::stop_time;
 //use std::env;
 
 mod db;
@@ -45,7 +46,11 @@ fn main() {
     }
 
     // Example of starting a fasting session
-    match start_fasting(&conn, 1, Utc::now().naive_utc()) {
+    match start_fasting(
+        &conn, 
+        1, 
+        Utc::now().naive_utc(),
+        stop_time: Utc::now().naive_utc()) {
         Ok(_) => println!("Fasting session started"),
         Err(e) => println!("Error starting fasting session: {:?}", e),
     }
