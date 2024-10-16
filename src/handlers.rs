@@ -18,9 +18,9 @@ pub fn create_user(
 
     let new_user = NewUser {
         username: username_input.to_string(),
-        hashed_password, // The hashed password is already a String
+        hashed_password: password_input.to_string(), // The hashed password is already a String
     };
-    
+    let new_user = new_user;
 
     diesel::insert_into(users).values(&new_user).execute(&conn)
 }
