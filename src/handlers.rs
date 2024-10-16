@@ -49,7 +49,6 @@ pub fn start_fasting(
     conn: &SqliteConnection,
     user_id_input: i32,
     start_time: NaiveDateTime,
-    stop_time: NaiveDateTime,
 ) -> Result<usize, diesel::result::Error> {
     let new_event = NewFastingEvent {
         user_id: user_id_input,

@@ -39,12 +39,7 @@ fn main() {
     }
 
     // Example of starting a fasting session
-    match start_fasting(
-        &conn,
-        1,
-        Utc::now().naive_utc(), // Start time
-        Utc::now().naive_utc(), // Stop time (just an example, you'll need actual logic)
-    ) {
+    match start_fasting(&conn, 1, Utc::now().naive_utc()) {
         Ok(_) => println!("Fasting session started"),
         Err(e) => println!("Error starting fasting session: {:?}", e),
     }
