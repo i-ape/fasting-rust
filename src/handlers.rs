@@ -4,7 +4,7 @@ use diesel::prelude::*;
 use diesel::SqliteConnection;
 
 use crate::models::{FastingEvent, NewFastingEvent, NewUser, User};
-use crate::schema::fasting_event::dsl::*;
+use crate::schema::fasting_events::dsl::*;
 use crate::schema::users::dsl::*;
 
 /// Create a new user in the database, with hashed password
