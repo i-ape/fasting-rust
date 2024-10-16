@@ -14,7 +14,7 @@ pub fn create_user(
     password_input: &str,
 ) -> Result<usize, diesel::result::Error> {
     // Hash the password before storing it
-    let hashed_password = hash(password_input, DEFAULT_COST).expect("Error hashing password");
+    let hashed_password = match hash(password_input, DEFAULT_COST).expect("Error hashing password");
 
     let new_user = NewUser {
         username: username_input.to_string(),
