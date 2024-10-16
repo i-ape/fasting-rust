@@ -3,14 +3,8 @@ extern crate diesel;
 extern crate dotenv;
 extern crate rocket;
 
-//use rocket::serde::json::Json;
-//use rocket_sync_db_pools::database;
-
 use chrono::Utc;
-//use diesel::dsl::now;
 use dotenv::dotenv;
-use schema::fasting_events::stop_time;
-//use std::env;
 
 mod db;
 mod handlers;
@@ -19,7 +13,6 @@ mod schema;
 
 use crate::db::establish_connection;
 use crate::handlers::{create_user, login_user, start_fasting, stop_fasting};
-//use structopt::StructOpt;
 
 fn main() {
     dotenv().ok();
@@ -47,10 +40,11 @@ fn main() {
 
     // Example of starting a fasting session
     match start_fasting(
-        &conn, 
-        1, 
-        Utc::now().naive_utc(),
-        stop_time: Utc::now().naive_utc()) {
+        &conn,
+        1,
+        Utc::now().naive_utc(), // Start time
+        Utc::now().naive_utc(), // Stop time (just an example, you'll need actual logic)
+    ) {
         Ok(_) => println!("Fasting session started"),
         Err(e) => println!("Error starting fasting session: {:?}", e),
     }
