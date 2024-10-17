@@ -1,4 +1,5 @@
 use bcrypt::{hash, verify, DEFAULT_COST};
+use chrono::naive;
 use chrono::{NaiveDateTime, Utc};
 use diesel::prelude::*;
 use diesel::SqliteConnection;
@@ -22,7 +23,7 @@ pub fn create_user(
     };
     let new_user = new_user;
 
-    diesel::insert_into(users).values(&new_user).execute(&conn)
+    diesel::insert_into(users).values(&new_user).execute(&mut &conn)
 }
 
 /// Log in the user by verifying the username and password
@@ -34,7 +35,7 @@ pub fn login_user(
     // Query for the user by username
     let user = users
         .filter(username.eq(username_input))
-        .first::<User>(conn)?;
+        .first::<User>(&mut conn)?;
 
     // Verify the password
     if verify(password_input, &user.hashed_password).unwrap_or(false) {
@@ -51,9 +52,9 @@ pub fn start_fasting(
     start_time: NaiveDateTime,
 ) -> Result<usize, diesel::result::Error> {
     let new_event = NewFastingEvent {
-        user_id: user_id_input,
-        start_time,
-        stop_time: Some(stop_time), // Can be None if the fast is ongoing
+        user_id: user_id_input, 
+        start_time: Some(()),
+        stop_time: Some(()), // Can be None if the fast is ongoing
     };
 
     diesel::insert_into(fasting_events)
