@@ -2,9 +2,13 @@ extern crate bcrypt;
 extern crate diesel;
 extern crate dotenv;
 extern crate rocket;
+extern crate structopt;
+
 
 use chrono::Utc;
 use dotenv::dotenv;
+use structopt::StructOpt;
+
 
 mod db;
 mod handlers;
@@ -20,14 +24,18 @@ fn main() {
     // Establish the database connection
     let conn = establish_connection();
 
+    // Get input from the user
+    let username = prompt_input("Enter username: ");
+    let password = prompt_input("Enter password: ");
+
     // Example of creating a user
-    match create_user(&conn, "example_username", "example_password") {
+    match create_user(&conn, &username, &password) {
         Ok(_) => println!("User created successfully"),
         Err(e) => println!("Error creating user: {:?}", e),
     }
 
     // Example of logging in a user
-    match login_user(&conn, "example_username", "example_password") {
+    match login_user(&conn, &username, &password) {
         Ok(_valid) => {
             if true {
                 println!("Login successful");
