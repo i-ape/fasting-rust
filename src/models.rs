@@ -1,43 +1,34 @@
-use crate::schema::{fasting_events, users};
-use chrono::NaiveDateTime;
-use diesel::prelude::*;
-//use diesel::sqlite::SqliteConnection;
-use diesel::{Identifiable, Insertable, Queryable};
+use diesel::{Queryable, Insertable};
+use serde::Serialize;
 
-/// Represents a user in the `users` table.
-#[derive(Debug, Queryable, Identifiable)]
-#[table_name = "users"]
+use crate::schema::{users, fasting_events};
+
+#[derive(Queryable, Serialize)]
 pub struct User {
     pub id: i32,
     pub username: String,
     pub hashed_password: String,
-    pub created_at: NaiveDateTime,
 }
 
-/// Used to insert a new user into the `users` table.
 #[derive(Insertable)]
 #[table_name = "users"]
-pub struct NewUser {
-    pub username: String,
-    pub hashed_password: String,
+pub struct NewUser<'a> {
+    pub username: &'a str,
+    pub hashed_password: &'a str,
 }
 
-/// Represents a fasting event in the `fasting_events` table.
-#[derive(Debug, Queryable, Identifiable, Associations)]
-#[belongs_to(User)]
-#[table_name = "fasting_events"]
+#[derive(Queryable, Serialize)]
 pub struct FastingEvent {
     pub id: i32,
     pub user_id: i32,
-    pub start_time: NaiveDateTime,
-    pub end_time: Option<NaiveDateTime>, // `None` means the fast is still ongoing
+    pub start_time: chrono::NaiveDateTime,
+    pub stop_time: Option<chrono::NaiveDateTime>,
 }
 
-/// Used to insert a new fasting event into the `fasting_events` table.
 #[derive(Insertable)]
 #[table_name = "fasting_events"]
 pub struct NewFastingEvent {
     pub user_id: i32,
-    pub start_time: NaiveDateTime,
-    pub stop_time: Option<NaiveDateTime>, // `None` when the fast starts
+    pub start_time: chrono::NaiveDateTime,
+    pub stop_time: Option<chrono::NaiveDateTime>,
 }
