@@ -16,23 +16,25 @@ mod schema;
 use crate::db::establish_connection;
 use crate::handlers::{create_user, login_user, start_fasting, stop_fasting};
 
-#[derive(StructOpt)]
+/// Define the command-line options
+#[derive(StructOpt, Debug)]
+#[structopt(name = "FastingApp", about = "A simple fasting application.")]
 struct Cli {
-    /// Username for the user
-    #[structopt(short, long)]
-    username: String,
-
-    /// Password for the user
-    #[structopt(short, long)]
-    password: String,
-
-    /// Action to perform: create_user, login, start_fast, stop_fast
+    /// The action to perform (create_user, login, start_fast, stop_fast)
     #[structopt(short, long)]
     action: String,
 
-    /// Optional fasting event ID for stopping fasts
-    #[structopt(short, long, default_value = "1")]
-    event_id: i32,
+    /// Username for the operation
+    #[structopt(short, long)]
+    username: Option<String>,
+
+    /// Password for the operation (required for create_user and login)
+    #[structopt(short, long)]
+    password: Option<String>,
+
+    /// Event ID for fasting operations (required for start_fast and stop_fast)
+    #[structopt(short, long)]
+    event_id: Option<i32>,
 }
 
 fn main() {
@@ -44,26 +46,52 @@ fn main() {
     // Parse the command-line arguments
     let args = Cli::from_args();
 
-    // Perform action based on the command-line argument
+    // Ensure the action is provided
     match args.action.as_str() {
-        "create_user" => match create_user(&conn, &args.username, &args.password) {
-            Ok(_) => println!("User created successfully"),
-            Err(e) => println!("Error creating user: {:?}", e),
-        },
-        "login" => match login_user(&conn, &args.username, &args.password) {
-            Ok(_valid) => {
-                println!("Login successful");
+        "create_user" => {
+            // Validate that username and password are provided
+            if let (Some(username), Some(password)) = (args.username, args.password) {
+                match create_user(&conn, &username, &password) {
+                    Ok(_) => println!("User created successfully"),
+                    Err(e) => println!("Error creating user: {:?}", e),
+                }
+            } else {
+                println!("Error: Both username and password must be provided for creating a user.");
             }
-            Err(e) => println!("Error logging in: {:?}", e),
-        },
-        "start_fast" => match start_fasting(&conn, args.event_id, Utc::now().naive_utc()) {
-            Ok(_) => println!("Fasting session started"),
-            Err(e) => println!("Error starting fasting session: {:?}", e),
-        },
-        "stop_fast" => match stop_fasting(&conn, args.event_id, Utc::now().naive_utc()) {
-            Ok(_) => println!("Fasting session stopped"),
-            Err(e) => println!("Error stopping fasting session: {:?}", e),
-        },
+        }
+        "login" => {
+            // Validate that username and password are provided
+            if let (Some(username), Some(password)) = (args.username, args.password) {
+                match login_user(&conn, &username, &password) {
+                    Ok(_) => println!("Login successful"),
+                    Err(e) => println!("Error logging in: {:?}", e),
+                }
+            } else {
+                println!("Error: Both username and password must be provided for logging in.");
+            }
+        }
+        "start_fast" => {
+            // Validate that event ID is provided
+            if let Some(event_id) = args.event_id {
+                match start_fasting(&conn, event_id, Utc::now().naive_utc()) {
+                    Ok(_) => println!("Fasting session started"),
+                    Err(e) => println!("Error starting fasting session: {:?}", e),
+                }
+            } else {
+                println!("Error: Event ID must be provided to start a fasting session.");
+            }
+        }
+        "stop_fast" => {
+            // Validate that event ID is provided
+            if let Some(event_id) = args.event_id {
+                match stop_fasting(&conn, event_id, Utc::now().naive_utc()) {
+                    Ok(_) => println!("Fasting session stopped"),
+                    Err(e) => println!("Error stopping fasting session: {:?}", e),
+                }
+            } else {
+                println!("Error: Event ID must be provided to stop a fasting session.");
+            }
+        }
         _ => {
             println!("Invalid action. Use 'create_user', 'login', 'start_fast', or 'stop_fast'.");
         }

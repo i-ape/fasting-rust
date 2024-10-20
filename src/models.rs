@@ -1,7 +1,7 @@
-use diesel::{Queryable, Insertable};
+use diesel::{Insertable, Queryable};
 use serde::Serialize;
 
-use crate::schema::{users, fasting_events};
+use crate::schema::{fasting_events, users};
 
 #[derive(Queryable, Serialize)]
 pub struct User {
