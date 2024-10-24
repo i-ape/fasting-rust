@@ -1,7 +1,6 @@
 use bcrypt::{hash, verify, DEFAULT_COST};
 use diesel::prelude::*;
 use diesel::SqliteConnection;
-
 use crate::models::{FastingEvent, NewFastingEvent, NewUser, User};
 use crate::schema::fasting_events::dsl::*;
 use crate::schema::users::dsl::*;
@@ -14,14 +13,17 @@ pub fn create_user(
     password_input: &str,
 ) -> Result<usize, diesel::result::Error> {
     // Hash the password before storing it
-    let hashed_password = hash(password_input, DEFAULT_COST).expect("Error hashing password");
+    let hashed_password = hash(password_input, DEFAULT_COST)
+        .map_err(|_| diesel::result::Error::RollbackTransaction)?;
 
     let new_user = NewUser {
         username: username_input.to_string(),
-        hashed_password: hashed_password.to_string(),
+        hashed_password: hashed_password,  // Fixed type issue by directly using hashed_password
     };
 
-    diesel::insert_into(users).values(&new_user).execute(conn)
+    diesel::insert_into(users)
+        .values(&new_user)
+        .execute(conn)
 }
 
 /// Log in the user by verifying the username and password
@@ -36,7 +38,9 @@ pub fn login_user(
         .first::<User>(conn)?;
 
     // Verify the password
-    if verify(password_input, &user.hashed_password).unwrap_or(false) {
+    if verify(password_input, &user.hashed_password)
+        .map_err(|_| diesel::result::Error::RollbackTransaction)? 
+    {
         Ok(user)
     } else {
         Err(diesel::result::Error::NotFound)
