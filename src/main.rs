@@ -6,8 +6,8 @@ extern crate structopt;
 
 use chrono::Utc;
 use dotenv::dotenv;
-use std::io::{self, Write};
-use structopt::StructOpt;
+//use std::io::{self, Write};
+//use structopt::StructOpt;
 
 mod db;
 mod handlers;
