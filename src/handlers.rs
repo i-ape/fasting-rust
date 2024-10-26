@@ -13,8 +13,8 @@ pub fn create_user(
     username_input: &str,
     password_input: &str,
 ) -> Result<usize, FastingAppError> {
-    let hashed_password =
-        hash(password_input, DEFAULT_COST).map_err(FastingAppError::PasswordHashError)?;
+    let hashed_password = hash(password_input, DEFAULT_COST)
+        .map_err(FastingAppError::PasswordHashError)?;
 
     let new_user = NewUser {
         username: username_input.to_string(),
