@@ -13,6 +13,7 @@ mod db;
 mod handlers;
 mod models;
 mod schema;
+mod errors;
 
 use crate::db::establish_connection;
 use crate::handlers::{create_user, login_user, start_fasting, stop_fasting};
