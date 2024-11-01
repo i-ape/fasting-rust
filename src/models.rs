@@ -11,8 +11,8 @@ pub struct User {
 
 #[derive(Insertable)]
 #[table_name = "users"]
-pub struct NewUser<'a> {
-    pub username: &'a str,
+pub struct NewUser {
+    pub username: String,
     pub hashed_password: String,
 }
 
