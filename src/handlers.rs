@@ -3,7 +3,7 @@ use crate::models::{FastingEvent, NewFastingEvent, NewUser, User};
 use crate::schema::fasting_events::dsl::*;
 use crate::schema::users::dsl::*;
 use bcrypt::{hash, verify, DEFAULT_COST};
-use chrono::{NaiveDateTime, Utc};
+use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use diesel::SqliteConnection;
 
@@ -13,8 +13,8 @@ pub fn create_user(
     username_input: &str,
     password_input: &str,
 ) -> Result<usize, FastingAppError> {
-    let hashed_password = hash(password_input, DEFAULT_COST)
-        .map_err(FastingAppError::PasswordHashError)?;
+    let hashed_password =
+        hash(password_input, DEFAULT_COST).map_err(FastingAppError::PasswordHashError)?;
 
     let new_user = NewUser {
         username: username_input.to_string(),
@@ -32,19 +32,18 @@ pub fn login_user(
     conn: &SqliteConnection,
     username_input: &str,
     password_input: &str,
-) -> Result<User, diesel::result::Error> {
-    // Query for the user by username
+) -> Result<User, FastingAppError> {
     let user = users
         .filter(username.eq(username_input))
-        .first::<User>(conn)?;
+        .first::<User>(conn)
+        .optional()
+        .map_err(FastingAppError::DatabaseError)?
+        .ok_or(FastingAppError::InvalidCredentials)?;
 
-    // Verify the password
-    if verify(password_input, &user.hashed_password)
-        .map_err(|_| diesel::result::Error::RollbackTransaction)?
-    {
+    if verify(password_input, &user.hashed_password).map_err(FastingAppError::PasswordHashError)? {
         Ok(user)
     } else {
-        Err(diesel::result::Error::NotFound)
+        Err(FastingAppError::InvalidCredentials)
     }
 }
 
@@ -58,7 +57,8 @@ pub fn start_fasting(
         .filter(user_id.eq(user_id_input))
         .filter(stop_time.is_null())
         .first::<FastingEvent>(conn)
-        .optional()?;
+        .optional()
+        .map_err(FastingAppError::DatabaseError)?;
 
     if active_event.is_some() {
         return Err(FastingAppError::ExistingSessionError);
@@ -80,10 +80,10 @@ pub fn start_fasting(
 pub fn stop_fasting(
     conn: &SqliteConnection,
     user_id_input: i32,
-    stop_time: NaiveDateTime,
-) -> Result<usize, diesel::result::Error> {
-    // Update the fasting event, setting the stop_time
+    end_time_input: NaiveDateTime,
+) -> Result<usize, FastingAppError> {
     diesel::update(fasting_events.filter(user_id.eq(user_id_input).and(stop_time.is_null())))
-        .set(stop_time.eq(Some(stop_time)))
+        .set(stop_time.eq(Some(end_time_input)))
         .execute(conn)
+        .map_err(FastingAppError::DatabaseError)
 }
