@@ -8,25 +8,28 @@ use diesel::prelude::*;
 use diesel::SqliteConnection;
 
 /// Create a new user in the database with a hashed password
-///
 pub fn create_user(
     conn: &SqliteConnection,
     username_input: &str,
     password_input: &str,
 ) -> Result<usize, FastingAppError> {
-    let hashed_password =
-        hash(password_input, DEFAULT_COST).map_err(FastingAppError::PasswordHashError)?;
+    // Hash the password and handle potential errors
+    let hashed_password = hash(password_input, DEFAULT_COST)
+        .map_err(FastingAppError::PasswordHashError)?;
 
+    // Create a new user struct
     let new_user = NewUser {
         username: username_input.to_string(),
-        hashed_password,
+        hashed_password, // this should be a String
     };
 
+    // Insert the new user into the database
     diesel::insert_into(users)
         .values(&new_user)
         .execute(conn)
         .map_err(FastingAppError::DatabaseError)
 }
+
 
 /// Log in the user by verifying the username and password
 pub fn login_user(
