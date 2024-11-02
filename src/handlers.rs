@@ -8,6 +8,7 @@ use diesel::prelude::*;
 use diesel::SqliteConnection;
 
 /// Create a new user in the database with a hashed password
+///
 pub fn create_user(
     conn: &SqliteConnection,
     username_input: &str,
