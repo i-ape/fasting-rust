@@ -13,23 +13,18 @@ pub fn create_user(
     username_input: &str,
     password_input: &str,
 ) -> Result<usize, FastingAppError> {
-    // Hash the password and handle potential errors
-    let hashed_password = hash(password_input, DEFAULT_COST)
-        .map_err(FastingAppError::PasswordHashError)?;
+    let hashedp = hash(password_input, DEFAULT_COST).map_err(FastingAppError::PasswordHashError)?;
 
-    // Create a new user struct
+    // Create a new user struct with a different variable name
     let new_user = NewUser {
         username: username_input.to_string(),
-        hashed_password, // this should be a String
+        hashed_password: hashedp, 
     };
-
-    // Insert the new user into the database
     diesel::insert_into(users)
         .values(&new_user)
         .execute(conn)
         .map_err(FastingAppError::DatabaseError)
 }
-
 
 /// Log in the user by verifying the username and password
 pub fn login_user(
