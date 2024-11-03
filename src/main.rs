@@ -49,7 +49,7 @@ fn main() {
             println!("Login successful. User ID: {}", user.id);
 
             // Start a fasting session
-            match start_fasting(&mut mut conn, user.id, Utc::now().naive_utc()) {
+            match start_fasting(&mut conn, user.id, Utc::now().naive_utc()) {
                 Ok(_) => println!("Fasting session started."),
                 Err(e) => println!("Error starting fasting session: {:?}", e),
             }
