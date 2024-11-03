@@ -71,7 +71,7 @@ pub fn start_fasting(
 
     diesel::insert_into(fasting_events)
         .values(&new_event)
-        .execute(mut conn)
+        .execute(conn)
         .map_err(FastingAppError::DatabaseError)
 }
 
@@ -83,6 +83,6 @@ pub fn stop_fasting(
 ) -> Result<usize, FastingAppError> {
     diesel::update(fasting_events.filter(user_id.eq(user_id_input).and(stop_time.is_null())))
         .set(stop_time.eq(Some(end_time_input)))
-        .execute(mut conn)
+        .execute(conn)
         .map_err(FastingAppError::DatabaseError)
 }
