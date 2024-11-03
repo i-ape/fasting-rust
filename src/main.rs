@@ -10,10 +10,10 @@ use dotenv::dotenv;
 //use structopt::StructOpt;
 
 mod db;
+mod errors;
 mod handlers;
 mod models;
 mod schema;
-mod errors;
 
 use crate::db::establish_connection;
 use crate::handlers::{create_user, login_user, start_fasting, stop_fasting};
@@ -31,31 +31,31 @@ fn main() {
     dotenv().ok();
 
     // Establish the database connection
-    let conn = establish_connection();
+    let mut conn = establish_connection();
 
     // Get input from the user
     let username = prompt_input("Enter username: ");
     let password = prompt_input("Enter password: ");
 
     // Create a new user
-    match create_user(&conn, &username, &password) {
+    match create_user(&mut conn, &username, &password) {
         Ok(_) => println!("User created successfully."),
         Err(e) => println!("Error creating user: {:?}", e),
     }
 
     // Log in the user
-    match login_user(&conn, &username, &password) {
+    match login_user(&mut conn, &username, &password) {
         Ok(user) => {
             println!("Login successful. User ID: {}", user.id);
 
             // Start a fasting session
-            match start_fasting(&conn, user.id, Utc::now().naive_utc()) {
+            match start_fasting(&mut mut conn, user.id, Utc::now().naive_utc()) {
                 Ok(_) => println!("Fasting session started."),
                 Err(e) => println!("Error starting fasting session: {:?}", e),
             }
 
             // After some time, stop the fasting session (for demonstration, stopping right after starting)
-            match stop_fasting(&conn, user.id, Utc::now().naive_utc()) {
+            match stop_fasting(&mut conn, user.id, Utc::now().naive_utc()) {
                 Ok(_) => println!("Fasting session stopped."),
                 Err(e) => println!("Error stopping fasting session: {:?}", e),
             }

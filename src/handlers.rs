@@ -9,7 +9,7 @@ use diesel::SqliteConnection;
 
 /// Create a new user in the database with a hashed password
 pub fn create_user(
-    conn: &SqliteConnection,
+    conn: &mut SqliteConnection,
     username_input: &str,
     password_input: &str,
 ) -> Result<usize, FastingAppError> {
@@ -18,7 +18,7 @@ pub fn create_user(
     // Create a new user struct with a different variable name
     let new_user = NewUser {
         username: username_input.to_string(),
-        hashed_password: hashedp, 
+        hashed_password: hashedp,
     };
     diesel::insert_into(users)
         .values(&new_user)
@@ -28,7 +28,7 @@ pub fn create_user(
 
 /// Log in the user by verifying the username and password
 pub fn login_user(
-    conn: &SqliteConnection,
+    conn: &mut SqliteConnection,
     username_input: &str,
     password_input: &str,
 ) -> Result<User, FastingAppError> {
@@ -48,7 +48,7 @@ pub fn login_user(
 
 /// Start fasting event for a user
 pub fn start_fasting(
-    conn: &SqliteConnection,
+    conn: &mut SqliteConnection,
     user_id_input: i32,
     start_time: NaiveDateTime,
 ) -> Result<usize, FastingAppError> {
@@ -71,7 +71,7 @@ pub fn start_fasting(
 
     diesel::insert_into(fasting_events)
         .values(&new_event)
-        .execute(conn)
+        .execute(mut conn)
         .map_err(FastingAppError::DatabaseError)
 }
 
@@ -83,6 +83,6 @@ pub fn stop_fasting(
 ) -> Result<usize, FastingAppError> {
     diesel::update(fasting_events.filter(user_id.eq(user_id_input).and(stop_time.is_null())))
         .set(stop_time.eq(Some(end_time_input)))
-        .execute(conn)
+        .execute(mut conn)
         .map_err(FastingAppError::DatabaseError)
 }
