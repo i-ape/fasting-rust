@@ -34,7 +34,7 @@ pub fn login_user(
 ) -> Result<User, FastingAppError> {
     let user = users
         .filter(username.eq(username_input))
-        .first::<User>(conn)
+        .first::<User>(conn) // `conn` is mutable here
         .optional()
         .map_err(FastingAppError::DatabaseError)?
         .ok_or(FastingAppError::InvalidCredentials)?;
@@ -55,9 +55,8 @@ pub fn start_fasting(
     let active_event = fasting_events
         .filter(user_id.eq(user_id_input))
         .filter(stop_time.is_null())
-        .first::<FastingEvent>(conn)
-        .optional()
-        .map_err(FastingAppError::DatabaseError)?;
+        .first::<FastingEvent>(conn) // `conn` is mutable here
+        .optional()?;
 
     if active_event.is_some() {
         return Err(FastingAppError::ExistingSessionError);
@@ -71,18 +70,18 @@ pub fn start_fasting(
 
     diesel::insert_into(fasting_events)
         .values(&new_event)
-        .execute(conn)
+        .execute(conn) // `conn` is mutable here
         .map_err(FastingAppError::DatabaseError)
 }
 
 /// Stop fasting event for a user (marks the end of a fast)
 pub fn stop_fasting(
-    conn: &SqliteConnection,
+    conn: &mut SqliteConnection,
     user_id_input: i32,
     end_time_input: NaiveDateTime,
 ) -> Result<usize, FastingAppError> {
     diesel::update(fasting_events.filter(user_id.eq(user_id_input).and(stop_time.is_null())))
         .set(stop_time.eq(Some(end_time_input)))
-        .execute(conn)
+        .execute(conn) // `conn` is mutable here
         .map_err(FastingAppError::DatabaseError)
 }
