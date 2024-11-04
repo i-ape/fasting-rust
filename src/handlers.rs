@@ -50,13 +50,14 @@ pub fn login_user(
 pub fn start_fasting(
     conn: &mut SqliteConnection,
     user_id_input: i32,
-    start_time: NaiveDateTime,
+    event_start_time: NaiveDateTime, // Renamed to avoid conflict
 ) -> Result<usize, FastingAppError> {
     let active_event = fasting_events
         .filter(user_id.eq(user_id_input))
         .filter(stop_time.is_null())
-        .first::<FastingEvent>(conn) // `conn` is mutable here
-        .optional()?;
+        .first::<FastingEvent>(conn)
+        .optional()
+        .map_err(FastingAppError::DatabaseError)?;
 
     if active_event.is_some() {
         return Err(FastingAppError::ExistingSessionError);
@@ -64,13 +65,13 @@ pub fn start_fasting(
 
     let new_event = NewFastingEvent {
         user_id: user_id_input,
-        start_time,
+        start_time: event_start_time, // Use the new variable name here
         stop_time: None,
     };
 
     diesel::insert_into(fasting_events)
         .values(&new_event)
-        .execute(conn) // `conn` is mutable here
+        .execute(conn)
         .map_err(FastingAppError::DatabaseError)
 }
 
