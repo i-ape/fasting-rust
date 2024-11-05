@@ -25,7 +25,22 @@ pub fn create_user(
         .execute(conn)
         .map_err(FastingAppError::DatabaseError)
 }
+pub fn find_user_by_username(
+    conn: &mut SqliteConnection,
+    username_input: &str,
+) -> Result<User, FastingAppError> {
+    use crate::schema::users::dsl::*;
 
+    let user = users
+        .filter(username.eq(username_input))
+        .select(User::as_select())
+        .first::<User>(conn)
+        .optional()
+        .map_err(FastingAppError::DatabaseError)?
+        .ok_or(FastingAppError::InvalidCredentials)?;
+
+    Ok(user)
+}
 /// Log in the user by verifying the username and password
 pub fn login_user(
     conn: &mut SqliteConnection, // Mutable reference to conn
