@@ -2,7 +2,7 @@ use crate::schema::{fasting_events, users};
 use chrono::NaiveDateTime;
 use diesel::{prelude::Identifiable, Insertable, Queryable};
 
-#[derive(Queryable)]
+#[derive(Queryable, Identifiable)]
 pub struct User {
     pub id: i32,
     pub username: String,
