@@ -1,8 +1,9 @@
 use crate::schema::{fasting_events, users};
 use chrono::NaiveDateTime;
-use diesel::{prelude::Identifiable, Insertable, Queryable};
+use diesel::{prelude::Identifiable, Insertable, Queryable, Selectable};
 
-#[derive(Queryable, Identifiable)]
+#[derive(Debug, Queryable, Selectable, Identifiable)]
+#[diesel(table_name = users)]
 pub struct User {
     pub id: i32,
     pub username: String,
@@ -11,14 +12,14 @@ pub struct User {
 }
 
 #[derive(Insertable)]
-#[table_name = "users"]
+#[diesel(table_name = users)]
 pub struct NewUser {
     pub username: String,
     pub hashed_password: String,
 }
 
 #[derive(Queryable, Identifiable)]
-#[table_name = "fasting_events"]
+#[diesel(table_name = fasting_events)]
 pub struct FastingEvent {
     pub id: Option<i32>,
     pub user_id: i32,
@@ -28,7 +29,7 @@ pub struct FastingEvent {
 }
 
 #[derive(Insertable)]
-#[table_name = "fasting_events"]
+#[diesel(table_name = fasting_events)]
 pub struct NewFastingEvent {
     pub user_id: i32,
     pub start_time: NaiveDateTime,
