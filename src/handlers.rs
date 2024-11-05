@@ -34,7 +34,8 @@ pub fn login_user(
 ) -> Result<User, FastingAppError> {
     let user = users
         .filter(username.eq(username_input))
-        .first::<User>(conn) // No type mismatch here if conn is mutable
+        .select(User::as_select())
+        .first::<User>(conn)
         .optional()
         .map_err(FastingAppError::DatabaseError)?
         .ok_or(FastingAppError::InvalidCredentials)?;
