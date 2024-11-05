@@ -28,13 +28,13 @@ pub fn create_user(
 
 /// Log in the user by verifying the username and password
 pub fn login_user(
-    conn: &mut SqliteConnection,
+    conn: &mut SqliteConnection, // Mutable reference to conn
     username_input: &str,
     password_input: &str,
 ) -> Result<User, FastingAppError> {
     let user = users
         .filter(username.eq(username_input))
-        .first::<User>(conn) // `conn` is mutable here
+        .first::<User>(conn) // No type mismatch here if conn is mutable
         .optional()
         .map_err(FastingAppError::DatabaseError)?
         .ok_or(FastingAppError::InvalidCredentials)?;
