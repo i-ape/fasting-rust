@@ -1,11 +1,28 @@
 use crate::errors::FastingAppError;
 use crate::models::{FastingEvent, NewFastingEvent, NewUser, User};
-use crate::schema::fasting_events::dsl::*;
-use crate::schema::users::dsl::*;
+use crate::schema::{fasting_events::dsl::*, users::dsl::*};
 use bcrypt::{hash, verify, DEFAULT_COST};
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use diesel::SqliteConnection;
+
+/// Helper function to map database errors
+fn handle_db_error<T>(result: QueryResult<T>) -> Result<T, FastingAppError> {
+    result.map_err(FastingAppError::DatabaseError)
+}
+
+/// Helper function to find an active fasting event for a specific user
+fn find_active_fasting_event(
+    conn: &mut SqliteConnection, 
+    user_id_input: i32
+) -> Result<Option<FastingEvent>, FastingAppError> {
+    fasting_events
+        .filter(user_id.eq(user_id_input))
+        .filter(stop_time.is_null())
+        .first::<FastingEvent>(conn)
+        .optional()
+        .map_err(FastingAppError::DatabaseError)
+}
 
 /// Create a new user in the database with a hashed password
 pub fn create_user(
@@ -25,35 +42,27 @@ pub fn create_user(
         .execute(conn)
         .map_err(FastingAppError::DatabaseError)
 }
+  
+  /// Find a user by username
 pub fn find_user_by_username(
     conn: &mut SqliteConnection,
     username_input: &str,
 ) -> Result<User, FastingAppError> {
-    use crate::schema::users::dsl::*;
-
-    let user = users
+    users
         .filter(username.eq(username_input))
-        //.select(User::as_select())
         .first::<User>(conn)
         .optional()
         .map_err(FastingAppError::DatabaseError)?
-        .ok_or(FastingAppError::InvalidCredentials)?;
-
-    Ok(user)
+        .ok_or(FastingAppError::InvalidCredentials)
 }
+
 /// Log in the user by verifying the username and password
 pub fn login_user(
-    conn: &mut SqliteConnection, // Mutable reference to conn
+    conn: &mut SqliteConnection,
     username_input: &str,
     password_input: &str,
 ) -> Result<User, FastingAppError> {
-    let user = users
-        .filter(username.eq(username_input))
-        .select(User::as_select())
-        .first::<User>(conn)
-        .optional()
-        .map_err(FastingAppError::DatabaseError)?
-        .ok_or(FastingAppError::InvalidCredentials)?;
+    let user = find_user_by_username(conn, username_input)?;
 
     if verify(password_input, &user.hashed_password).map_err(FastingAppError::PasswordHashError)? {
         Ok(user)
@@ -66,22 +75,17 @@ pub fn login_user(
 pub fn start_fasting(
     conn: &mut SqliteConnection,
     user_id_input: i32,
-    event_start_time: NaiveDateTime, // Renamed to avoid conflict
+    event_start_time: NaiveDateTime,
 ) -> Result<usize, FastingAppError> {
-    let active_event = fasting_events
-        .filter(user_id.eq(user_id_input))
-        .filter(stop_time.is_null())
-        .first::<FastingEvent>(conn)
-        .optional()
-        .map_err(FastingAppError::DatabaseError)?;
-
-    if active_event.is_some() {
+    // Check if there's an active fasting event
+    if find_active_fasting_event(conn, user_id_input)?.is_some() {
         return Err(FastingAppError::ExistingSessionError);
     }
 
+    // Create and insert a new fasting event
     let new_event = NewFastingEvent {
         user_id: user_id_input,
-        start_time: event_start_time, // Use the new variable name here
+        start_time: event_start_time,
         stop_time: None,
     };
 
@@ -97,8 +101,12 @@ pub fn stop_fasting(
     user_id_input: i32,
     end_time_input: NaiveDateTime,
 ) -> Result<usize, FastingAppError> {
-    diesel::update(fasting_events.filter(user_id.eq(user_id_input).and(stop_time.is_null())))
-        .set(stop_time.eq(Some(end_time_input)))
-        .execute(conn) // `conn` is mutable here
-        .map_err(FastingAppError::DatabaseError)
+    diesel::update(
+        fasting_events
+            .filter(user_id.eq(user_id_input))
+            .filter(stop_time.is_null())
+    )
+    .set(stop_time.eq(Some(end_time_input)))
+    .execute(conn)
+    .map_err(FastingAppError::DatabaseError)
 }
