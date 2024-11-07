@@ -48,8 +48,8 @@ pub fn find_user_by_username(
     conn: &mut SqliteConnection,
     username_input: &str,
 ) -> Result<User, FastingAppError> {
-    users
-        .filter(username.eq(username_input))
+    users::table
+        .filter(users::username.eq(username_input)) // Use `users::username`
         .first::<User>(conn)
         .optional()
         .map_err(FastingAppError::DatabaseError)?
