@@ -1,10 +1,12 @@
-use fasting_rust::handlers::{create_user, find_user_by_username, login_user, start_fasting, stop_fasting};
-use fasting_rust::models::{NewUser, User};
-use fasting_rust::errors::FastingAppError;
-use fasting_rust::schema::users::dsl::*;
+use chrono::NaiveDateTime;
 use diesel::connection::Connection;
 use diesel::sqlite::SqliteConnection;
-use chrono::NaiveDateTime;
+use fasting_rust::errors::FastingAppError;
+use fasting_rust::handlers::{
+    create_user, find_user_by_username, login_user, start_fasting, stop_fasting,
+};
+use fasting_rust::models::{NewUser, User};
+use fasting_rust::schema::users::dsl::*;
 
 fn establish_test_connection() -> SqliteConnection {
     let conn = SqliteConnection::establish(":memory:").unwrap();
@@ -15,8 +17,8 @@ fn establish_test_connection() -> SqliteConnection {
 #[test]
 fn test_create_user() {
     let mut conn = establish_test_connection();
-    let username = "test_user";
-    let password = "test_password";
+    let username = &str;
+    let password: &str = &str;
 
     let result = create_user(&mut conn, username, password);
     assert!(result.is_ok());
@@ -32,8 +34,8 @@ fn test_create_user() {
 #[test]
 fn test_login_user_success() {
     let mut conn = establish_test_connection();
-    let username = "test_user";
-    let password = "test_password";
+    let username = &str;
+    let password: &str = &str;
 
     create_user(&mut conn, username, password).unwrap();
     let user = login_user(&mut conn, username, password);
