@@ -13,8 +13,8 @@ fn handle_db_error<T>(result: QueryResult<T>) -> Result<T, FastingAppError> {
 
 /// Helper function to find an active fasting event for a specific user
 fn find_active_fasting_event(
-    conn: &mut SqliteConnection, 
-    user_id_input: i32
+    conn: &mut SqliteConnection,
+    user_id_input: i32,
 ) -> Result<Option<FastingEvent>, FastingAppError> {
     fasting_events
         .filter(user_id.eq(user_id_input))
@@ -42,8 +42,8 @@ pub fn create_user(
         .execute(conn)
         .map_err(FastingAppError::DatabaseError)
 }
-  
-  /// Find a user by username
+
+/// Find a user by username
 pub fn find_user_by_username(
     conn: &mut SqliteConnection,
     username_input: &str,
@@ -104,7 +104,7 @@ pub fn stop_fasting(
     diesel::update(
         fasting_events
             .filter(user_id.eq(user_id_input))
-            .filter(stop_time.is_null())
+            .filter(stop_time.is_null()),
     )
     .set(stop_time.eq(Some(end_time_input)))
     .execute(conn)
