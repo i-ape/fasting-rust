@@ -11,6 +11,14 @@ fn handle_db_error<T>(result: QueryResult<T>) -> Result<T, FastingAppError> {
     result.map_err(FastingAppError::DatabaseError)
 }
 
+pub fn find_first_user(conn: &mut SqliteConnection) -> Result<Option<User>, FastingAppError> {
+    users
+        .limit(1)
+        .first::<User>(conn)
+        .optional()
+        .map_err(FastingAppError::DatabaseError)
+}
+
 /// Helper function to find an active fasting event for a specific user
 fn find_active_fasting_event(
     conn: &mut SqliteConnection,
