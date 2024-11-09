@@ -5,20 +5,29 @@ use bcrypt::{hash, verify, DEFAULT_COST};
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use diesel::SqliteConnection;
+use diesel::debug_query;
+use diesel::sqlite::Sqlite;
+use crate::schema::users::{self};
 
 /// Helper function to map database errors
 fn handle_db_error<T>(result: QueryResult<T>) -> Result<T, FastingAppError> {
     result.map_err(FastingAppError::DatabaseError)
 }
 
-pub fn find_first_user(conn: &mut SqliteConnection) -> Result<Option<User>, FastingAppError> {
-    users
-        .limit(1)
+pub fn find_user_by_username(
+    conn: &mut SqliteConnection,
+    username_input: &str,
+) -> Result<User, FastingAppError> {
+    let query = users.filter(username.eq(username_input));
+
+    println!("Generated SQL: {:?}", debug_query::<Sqlite, _>(&query)); // Log SQL for debugging
+
+    query
         .first::<User>(conn)
         .optional()
-        .map_err(FastingAppError::DatabaseError)
+        .map_err(FastingAppError::DatabaseError)?
+        .ok_or(FastingAppError::InvalidCredentials)
 }
-
 /// Helper function to find an active fasting event for a specific user
 fn find_active_fasting_event(
     conn: &mut SqliteConnection,
