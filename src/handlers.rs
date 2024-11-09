@@ -5,24 +5,19 @@ use bcrypt::{hash, verify, DEFAULT_COST};
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use diesel::SqliteConnection;
-use diesel::debug_query;
-use diesel::sqlite::Sqlite;
-use crate::schema::users::{self};
 
 /// Helper function to map database errors
 fn handle_db_error<T>(result: QueryResult<T>) -> Result<T, FastingAppError> {
     result.map_err(FastingAppError::DatabaseError)
 }
 
-pub fn find_user_by_username(
+pub fn find_user_by_username_alt(
     conn: &mut SqliteConnection,
     username_input: &str,
 ) -> Result<User, FastingAppError> {
-    let query = users.filter(username.eq(username_input));
-
-    println!("Generated SQL: {:?}", debug_query::<Sqlite, _>(&query)); // Log SQL for debugging
-
-    query
+    users
+        .filter(username.eq(username_input))
+        //.select(User::as_select())
         .first::<User>(conn)
         .optional()
         .map_err(FastingAppError::DatabaseError)?
