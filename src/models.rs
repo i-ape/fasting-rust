@@ -14,6 +14,7 @@ pub struct User {
 #[derive(Insertable)]
 #[diesel(table_name = users)]
 pub struct NewUser {
+    //pub id: i32,
     pub username: String,
     pub hashed_password: String,
 }
