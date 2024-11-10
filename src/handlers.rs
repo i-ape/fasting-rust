@@ -10,7 +10,21 @@ use diesel::SqliteConnection;
 fn handle_db_error<T>(result: QueryResult<T>) -> Result<T, FastingAppError> {
     result.map_err(FastingAppError::DatabaseError)
 }
-
+/// Handler to register a new user
+pub fn register_user(
+    conn: &mut SqliteConnection,
+    username_input: &str,
+    password_input: &str,
+) -> Result<String, FastingAppError> {
+    create_user(conn, username_input, password_input)
+        .map(|_| "User created successfully".to_string())
+        .map_err(|e| {
+            match e {
+                FastingAppError::DatabaseError(_) => FastingAppError::DatabaseError("Failed to create user.".to_string()),
+                _ => e,
+            }
+        })
+}
 pub fn find_user_by_username_alt(
     conn: &mut SqliteConnection,
     username_input: &str,
