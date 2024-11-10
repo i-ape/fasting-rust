@@ -1,4 +1,3 @@
-// errors.rs
 use bcrypt::BcryptError;
 use diesel::result::Error as DieselError;
 
