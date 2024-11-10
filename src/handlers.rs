@@ -20,7 +20,10 @@ pub fn register_user(
         .map(|_| "User created successfully".to_string())
         .map_err(|e| {
             match e {
-                FastingAppError::DatabaseError(_) => FastingAppError::DatabaseError("Failed to create user.".to_string()),
+                FastingAppError::DatabaseError(diesel_error) => {
+                    // Here, you can add more context if needed, or just pass the DieselError
+                    FastingAppError::DatabaseError(diesel_error)
+                }
                 _ => e,
             }
         })
