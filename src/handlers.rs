@@ -46,11 +46,11 @@ pub fn create_user(
     username_input: &str,
     password_input: &str,
 ) -> Result<usize, FastingAppError> {
-    let hashed_password =
-        hash(password_input, DEFAULT_COST).map_err(FastingAppError::PasswordHashError)?;
+    let hashedp = hash(password_input, DEFAULT_COST).map_err(FastingAppError::PasswordHashError)?;
+    // Create a new user struct with a different variable name
     let new_user = NewUser {
         username: username_input.to_string(),
-        hashed_password,
+        hashed_password: hashedp,
     };
     diesel::insert_into(users)
         .values(&new_user)
@@ -130,16 +130,20 @@ pub fn update_user_profile(
     new_username: Option<&str>,
     new_password: Option<&str>,
 ) -> Result<usize, FastingAppError> {
-    let mut query = diesel::update(users.filter(id.eq(user_id_input))).into_boxed();
+    let mut query = diesel::update(users).into_boxed();
 
     if let Some(username) = new_username {
         query = query.set(username.eq(username.to_string()));
     }
 
     if let Some(password) = new_password {
-        let hashed_password =
-            hash(password, DEFAULT_COST).map_err(FastingAppError::PasswordHashError)?;
-        query = query.set(hashed_password.eq(hashed_password));
+        
+    let hashedp = hash(password_input, DEFAULT_COST).map_err(FastingAppError::PasswordHashError)?;
+    // Create a new user struct with a different variable name
+    let new_user = NewUser {
+        username: username_input.to_string(),
+        hashed_password: hashedp,
+    };
     }
 
     query.execute(conn).map_err(FastingAppError::DatabaseError)
