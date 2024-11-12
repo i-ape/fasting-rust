@@ -1,4 +1,4 @@
 pub mod errors;
-pub mod handlers;
+pub mod temp_handlers;
 pub mod models;
 pub mod schema;

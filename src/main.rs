@@ -8,6 +8,9 @@ use chrono::Utc;
 use dotenv::dotenv;
 //use std::io::{self, Write};
 //use structopt::StructOpt;
+mod handlers;
+
+use handlers::{register_user, start_fasting, calculate_average_fasting_duration};
 
 mod db;
 mod errors;
