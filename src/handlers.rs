@@ -9,9 +9,9 @@ pub mod user;
 pub mod fasting;
 pub mod analytics;
 
-pub use user::*;
-pub use fasting::*;
-pub use analytics::*;
+pub use crate::handlers::analytics::*;
+pub use crate::handlers::fasting::*;
+pub use crate::handlers::user::*;
 
 
 /// Helper function to map database errors
