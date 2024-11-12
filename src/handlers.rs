@@ -5,6 +5,14 @@ use bcrypt::{hash, verify, DEFAULT_COST};
 use chrono::{NaiveDateTime, Utc};
 use diesel::prelude::*;
 use diesel::SqliteConnection;
+pub mod user;
+pub mod fasting;
+pub mod analytics;
+
+pub use user::*;
+pub use fasting::*;
+pub use analytics::*;
+
 
 /// Helper function to map database errors
 fn handle_db_error<T>(result: QueryResult<T>) -> Result<T, FastingAppError> {
