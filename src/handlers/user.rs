@@ -36,6 +36,18 @@ pub fn register_user(
             _ => e,
         })
 }
+/// Finds a user by username in the database
+pub fn find_user_by_username(
+    conn: &mut SqliteConnection,
+    username_input: &str,
+) -> Result<User, FastingAppError> {
+    users
+        .filter(username.eq(username_input))
+        .first::<User>(conn)
+        .optional()
+        .map_err(FastingAppError::DatabaseError)?
+        .ok_or(FastingAppError::InvalidCredentials)
+}
 
 /// Logs in a user by verifying credentials
 pub fn login_user(
@@ -43,7 +55,6 @@ pub fn login_user(
     username_input: &str,
     password_input: &str,
 ) -> Result<User, FastingAppError> {
-    
     let user = find_user_by_username(conn, username_input)?;
     if verify(password_input, &user.hashed_password).map_err(FastingAppError::PasswordHashError)? {
         Ok(user)
@@ -59,7 +70,6 @@ pub fn update_user_profile(
     new_username: Option<&str>,
     new_password: Option<&str>,
 ) -> Result<usize, FastingAppError> {
-    
     let mut query = diesel::update(users).into_boxed();
 
     if let Some(username) = new_username {
@@ -67,13 +77,13 @@ pub fn update_user_profile(
     }
 
     if let Some(password) = new_password {
-        
-    let hashedp = hash(password_input, DEFAULT_COST).map_err(FastingAppError::PasswordHashError)?;
-    // Create a new user struct with a different variable name
-    let new_user = NewUser {
-        username: username_input.to_string(),
-        hashed_password: hashedp,
-    };
+        let hashedp =
+            hash(password_input, DEFAULT_COST).map_err(FastingAppError::PasswordHashError)?;
+        // Create a new user struct with a different variable name
+        let new_user = NewUser {
+            username: username_input.to_string(),
+            hashed_password: hashedp,
+        };
     }
 
     query.execute(conn).map_err(FastingAppError::DatabaseError)
