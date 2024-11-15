@@ -1,6 +1,6 @@
 use crate::errors::FastingAppError;
 use crate::models::{FastingEvent, NewFastingEvent};
-use crate::schema::fasting_events::dsl::{user_id as schema_user_id, fasting_events, start_time, stop_time};
+use crate::schema::fasting_events::dsl::{user_id as schema_user_id, fasting_events, start_time as schema_start_time, stop_time};
 use chrono::{NaiveDateTime, Utc};
 use diesel::prelude::*;
 use diesel::SqliteConnection;
@@ -34,7 +34,7 @@ pub fn stop_fasting(
 ) -> Result<usize, FastingAppError> {
     diesel::update(
         fasting_events
-            .filter(schema_user_id.eq(user_id))  // Use `schema_user_id` here to avoid conflict
+            .filter(schema_user_id.eq(user_id))
             .filter(stop_time.is_null()),
     )
     .set(stop_time.eq(Some(end_time)))
@@ -65,8 +65,7 @@ fn find_active_fasting_event(
     user_id: i32,
 ) -> Result<Option<FastingEvent>, FastingAppError> {
     fasting_events
-        .filter(schema_user_id.eq(user_id))  // Use `schema_user_id` here to avoid conflict
-        .filter(stop_time.is_null())
+        .filter(schema_user_id.eq(user_id)) 
         .first::<FastingEvent>(conn)
         .optional()
         .map_err(FastingAppError::DatabaseError)
