@@ -8,21 +8,18 @@ use diesel::SqliteConnection;
 /// Starts a new fasting event for a user
 pub fn start_fasting(
     conn: &mut SqliteConnection,
-    user_id: i32,  // Keep this parameter as `user_id`
+    user_id: i32,
     event_start_time: NaiveDateTime,
 ) -> Result<usize, FastingAppError> {
     // Check if there's an active fasting event for this user
     if find_active_fasting_event(conn, user_id)?.is_some() {
         return Err(FastingAppError::ExistingSessionError);
     }
-
-    // Create and insert a new fasting event
     let new_event = NewFastingEvent {
         user_id,
         start_time: event_start_time,
         stop_time: None,
     };
-
     diesel::insert_into(fasting_events)
         .values(&new_event)
         .execute(conn)
@@ -32,7 +29,7 @@ pub fn start_fasting(
 /// Stops an active fasting event for a user
 pub fn stop_fasting(
     conn: &mut SqliteConnection,
-    user_id: i32,  // Keep this parameter as `user_id`
+    user_id: i32,
     end_time: NaiveDateTime,
 ) -> Result<usize, FastingAppError> {
     diesel::update(
@@ -48,7 +45,7 @@ pub fn stop_fasting(
 /// Retrieves the current fasting status
 pub fn get_current_fasting_status(
     conn: &mut SqliteConnection,
-    user_id: i32,  // Keep this parameter as `user_id`
+    user_id: i32,
 ) -> Result<Option<(NaiveDateTime, i64)>, FastingAppError> {
     if let Some(event) = find_active_fasting_event(conn, user_id)? {
         let start_time = event.start_time;
@@ -65,7 +62,7 @@ pub fn get_current_fasting_status(
 /// Helper function to find an active fasting event for a specific user
 fn find_active_fasting_event(
     conn: &mut SqliteConnection,
-    user_id: i32,  // Keep this parameter as `user_id`
+    user_id: i32,
 ) -> Result<Option<FastingEvent>, FastingAppError> {
     fasting_events
         .filter(schema_user_id.eq(user_id))  // Use `schema_user_id` here to avoid conflict
