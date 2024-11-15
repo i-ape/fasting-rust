@@ -1,17 +1,17 @@
 use crate::errors::FastingAppError;
 use crate::models::{FastingEvent, NewFastingEvent};
-use crate::schema::fasting_events::dsl::*;
-use chrono::NaiveDateTime;
+use crate::schema::fasting_events::dsl::{user_id as schema_user_id, fasting_events, start_time, stop_time};
+use chrono::{NaiveDateTime, Utc};
 use diesel::prelude::*;
 use diesel::SqliteConnection;
 
-/// Starts a new fasting event
+/// Starts a new fasting event for a user
 pub fn start_fasting(
     conn: &mut SqliteConnection,
-    user_id: i32,
+    user_id: i32,  // Keep this parameter as `user_id`
     event_start_time: NaiveDateTime,
 ) -> Result<usize, FastingAppError> {
-    // Check if there's an active fasting event
+    // Check if there's an active fasting event for this user
     if find_active_fasting_event(conn, user_id)?.is_some() {
         return Err(FastingAppError::ExistingSessionError);
     }
@@ -29,15 +29,15 @@ pub fn start_fasting(
         .map_err(FastingAppError::DatabaseError)
 }
 
-/// Stops the active fasting event
+/// Stops an active fasting event for a user
 pub fn stop_fasting(
     conn: &mut SqliteConnection,
-    user_id: i32,
+    user_id: i32,  // Keep this parameter as `user_id`
     end_time: NaiveDateTime,
 ) -> Result<usize, FastingAppError> {
     diesel::update(
         fasting_events
-            .filter(user_id.eq(user_id))
+            .filter(schema_user_id.eq(user_id))  // Use `schema_user_id` here to avoid conflict
             .filter(stop_time.is_null()),
     )
     .set(stop_time.eq(Some(end_time)))
@@ -48,12 +48,12 @@ pub fn stop_fasting(
 /// Retrieves the current fasting status
 pub fn get_current_fasting_status(
     conn: &mut SqliteConnection,
-    user_id: i32,
+    user_id: i32,  // Keep this parameter as `user_id`
 ) -> Result<Option<(NaiveDateTime, i64)>, FastingAppError> {
-    // Retrieve the active fasting event if any
     if let Some(event) = find_active_fasting_event(conn, user_id)? {
         let start_time = event.start_time;
-        let duration = chrono::Utc::now().naive_utc()
+        let duration = Utc::now()
+            .naive_utc()
             .signed_duration_since(start_time)
             .num_minutes();
         Ok(Some((start_time, duration)))
@@ -65,10 +65,10 @@ pub fn get_current_fasting_status(
 /// Helper function to find an active fasting event for a specific user
 fn find_active_fasting_event(
     conn: &mut SqliteConnection,
-    user_id: i32,
+    user_id: i32,  // Keep this parameter as `user_id`
 ) -> Result<Option<FastingEvent>, FastingAppError> {
     fasting_events
-        .filter(user_id.eq(user_id))
+        .filter(schema_user_id.eq(user_id))  // Use `schema_user_id` here to avoid conflict
         .filter(stop_time.is_null())
         .first::<FastingEvent>(conn)
         .optional()
