@@ -7,7 +7,7 @@ pub enum FastingAppError {
     PasswordHashError(BcryptError),
     ExistingSessionError,
     InvalidCredentials,
-    InvalidRequest,
+    InvalidRequest(String),
 }
 
 impl From<DieselError> for FastingAppError {

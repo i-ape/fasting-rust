@@ -70,24 +70,20 @@ pub fn update_user_profile(
     new_username: Option<&str>,
     new_password: Option<&str>,
 ) -> Result<usize, FastingAppError> {
-    let mut query = diesel::update(users.filter(crate::schema::users::dsl::id.eq(user_id))).into_boxed();
-
-    // Check if new_username is provided and apply it to the query
-    if let Some(username) = new_username {
-        query = query.set(crate::schema::users::dsl::username.eq(username.to_string()));
-    }
-
-    // Check if new_password is provided and apply it to the query
-    if let Some(password) = new_password {
-        let hashed_password = hash(password, DEFAULT_COST).map_err(FastingAppError::PasswordHashError)?;
-        query = query.set(crate::schema::users::dsl::hashed_password.eq(hashed_password));
-    }
-
-    // Ensure at least one `SET` clause is applied
     if new_username.is_none() && new_password.is_none() {
         return Err(FastingAppError::InvalidRequest("No updates provided".into()));
     }
 
-    // Execute the query
+    let mut query = diesel::update(users.filter(id.eq(user_id))).into_boxed();
+
+    if let Some(new_username) = new_username {
+        query = query.set(username.eq(new_username));
+    }
+
+    if let Some(new_password) = new_password {
+        let hashed_password = hash(new_password, DEFAULT_COST).map_err(FastingAppError::PasswordHashError)?;
+        query = query.set(hashed_password.eq(hashed_password));
+    }
+
     query.execute(conn).map_err(FastingAppError::DatabaseError)
 }
