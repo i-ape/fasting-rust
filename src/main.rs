@@ -65,4 +65,20 @@ fn main() {
         }
         Err(e) => println!("Error logging in: {:?}", e),
     }
+    let result = some_function_that_might_fail();
+
+    if let Err(error) = result {
+        match error {
+            FastingAppError::InvalidRequest(msg) => {
+                println!("Invalid request: {}", msg);
+            }
+            FastingAppError::DatabaseError(e) => {
+                println!("Database error: {}", e);
+            }
+            FastingAppError::PasswordHashError(e) => {
+                println!("Password hash error: {}", e);
+            }
+            // Other cases...
+        }
+    }
 }
