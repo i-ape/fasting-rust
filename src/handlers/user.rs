@@ -1,6 +1,6 @@
 use crate::errors::FastingAppError;
 use crate::models::{NewUser, User};
-use crate::schema::users::dsl::{username, users};
+use crate::schema::users::dsl::{username, users, id};
 use bcrypt::{hash, verify, DEFAULT_COST};
 use diesel::prelude::*;
 use diesel::SqliteConnection;
@@ -73,19 +73,22 @@ pub fn update_user_profile(
     new_password: Option<&str>,
 ) -> Result<usize, FastingAppError> {
     if new_username.is_none() && new_password.is_none() {
-        return Err(FastingAppError::InvalidRequest("No updates provided".into()));
+        return Err(FastingAppError::InvalidRequest("No updates provided".to_string()));
     }
 
-    let mut query = diesel::update(users.filter(id.eq(user_id))).into_boxed();
+    let mut updates = Vec::new();
 
-    if let Some(new_username) = new_username {
-        query = query.set(username.eq(new_username));
+    if let Some(username_value) = new_username {
+        updates.push(username.eq(username_value));
     }
 
-    if let Some(new_password) = new_password {
-        let hashed_password = hash(new_password, DEFAULT_COST).map_err(FastingAppError::PasswordHashError)?;
-        query = query.set(hashed_password.eq(&hashed_password));
+    if let Some(password_value) = new_password {
+        let hashed_password = hash(password_value, DEFAULT_COST).map_err(FastingAppError::PasswordHashError)?;
+        updates.push(hashed_password.eq(&hashed_password));
     }
 
-    query.execute(conn).map_err(FastingAppError::DatabaseError)
+    diesel::update(users.filter(id.eq(user_id)))
+        .set(updates) // Pass all updates as a tuple
+        .execute(conn)
+        .map_err(FastingAppError::DatabaseError)
 }
