@@ -2,14 +2,15 @@ use crate::schema::{fasting_events, users};
 use chrono::NaiveDateTime;
 use diesel::{prelude::{Identifiable, QueryableByName}, Insertable, Queryable, Selectable};
 
-#[derive(Debug, Queryable, Selectable, Identifiable, QueryableByName)]
-#[diesel(table_name = users)]
+#[derive(Queryable, Selectable)]
+#[diesel(table_name = users)] 
 pub struct User {
-    pub id: i32,
+    pub id: Option<i32>,
     pub username: String,
     pub hashed_password: String,
     pub created_at: Option<NaiveDateTime>,
 }
+
 
 #[derive(Queryable)]
 pub struct UserPartial {

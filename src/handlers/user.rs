@@ -84,7 +84,7 @@ pub fn update_user_profile(
 
     if let Some(new_password) = new_password {
         let hashed_password = hash(new_password, DEFAULT_COST).map_err(FastingAppError::PasswordHashError)?;
-        query = query.set(hashed_password.eq(hashed_password));
+        query = query.set(hashed_password.eq(&hashed_password));
     }
 
     query.execute(conn).map_err(FastingAppError::DatabaseError)
