@@ -1,6 +1,6 @@
 use crate::errors::FastingAppError;
 use crate::models::{NewUser, User};
-use crate::schema::users::dsl::{username as schema_username, users};
+use crate::schema::users::dsl::{username, users};
 use bcrypt::{hash, verify, DEFAULT_COST};
 use diesel::prelude::*;
 use diesel::SqliteConnection;
@@ -41,13 +41,15 @@ pub fn find_user_by_username(
     conn: &mut SqliteConnection,
     username_input: &str,
 ) -> Result<User, FastingAppError> {
+    use crate::schema::users::dsl::*;
     users
         .filter(username.eq(username_input))
-        .first::<User>(conn)
+        .first::<User>(conn) // Ensure the `User` struct matches the query
         .optional()
         .map_err(FastingAppError::DatabaseError)?
         .ok_or(FastingAppError::InvalidCredentials)
 }
+
 
 /// Logs in a user by verifying credentials
 pub fn login_user(

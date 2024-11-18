@@ -11,6 +11,12 @@ pub struct User {
     pub created_at: Option<NaiveDateTime>,
 }
 
+#[derive(Queryable)]
+pub struct UserPartial {
+    pub id: Option<i32>,
+    pub username: String,
+}
+
 #[derive(Insertable)]
 #[diesel(table_name = users)]
 pub struct NewUser {
