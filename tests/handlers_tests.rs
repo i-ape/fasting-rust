@@ -1,6 +1,7 @@
 use chrono::NaiveDateTime;
 use diesel::connection::Connection;
 use diesel::sqlite::SqliteConnection;
+use diesel::QueryDsl;
 use fasting_rust::errors::FastingAppError;
 use fasting_rust::temp_handlers::{
     create_user, find_user_by_username, login_user, start_fasting, stop_fasting,
