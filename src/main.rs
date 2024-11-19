@@ -10,17 +10,14 @@ use dotenv::dotenv;
 //use structopt::StructOpt;
 mod handlers;
 
-use handlers::{register_user, start_fasting, calculate_average_fasting_duration};
+use handlers::{register_user, start_fasting, calculate_average_fasting_duration,create_user, login_user,};
 
 mod db;
 mod errors;
-mod handlers;
 mod models;
 mod schema;
 
 use crate::db::establish_connection;
-use crate::handlers::{create_user, login_user, start_fasting, stop_fasting};
-
 fn prompt_input(message: &str) -> String {
     use std::io::{self, Write};
     print!("{}", message);
