@@ -36,12 +36,12 @@ pub fn calculate_average_fasting_duration(
     let total_duration: i64 = events
         .iter()
         .map(|event| {
-            let duration = event
+            
+            event
                 .stop_time
                 .unwrap()
                 .signed_duration_since(event.start_time)
-                .num_minutes();
-            duration
+                .num_minutes()
         })
         .sum();
 
@@ -66,12 +66,12 @@ pub fn calculate_weekly_fasting_summary(
     let total_duration: i64 = events
         .iter()
         .map(|event| {
-            let duration = event
+            
+            event
                 .stop_time
                 .unwrap()
                 .signed_duration_since(event.start_time)
-                .num_minutes();
-            duration
+                .num_minutes()
         })
         .sum();
 
