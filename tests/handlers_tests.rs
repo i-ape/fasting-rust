@@ -3,9 +3,8 @@ use diesel::connection::Connection;
 use diesel::sqlite::SqliteConnection;
 use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
 use fasting_rust::errors::FastingAppError;
-use fasting_rust::temp_handlers::{
-    create_user, find_user_by_username, login_user, start_fasting, stop_fasting,
-};
+use fasting_rust::handlers::{start_fasting, stop_fasting};
+use fasting_rust::users::{create_user, find_user_by_username, login_user}; 
 use fasting_rust::models::{NewUser, User};
 use fasting_rust::schema::users::dsl::*;
 
