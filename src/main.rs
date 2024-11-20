@@ -25,8 +25,38 @@ fn prompt_input(message: &str) -> String {
     input.trim().to_string()
 }
 
-fn some_function_that_might_fail() -> Result<(), FastingAppError> {
-    Err(FastingAppError::InvalidRequest("Example error".to_string()))
+fn handle_error(error: FastingAppError) {
+    match error {
+        FastingAppError::InvalidRequest(msg) => {
+            println!("Invalid request: {}", msg);
+        }
+        FastingAppError::DatabaseError(e) => {
+            println!("Database error: {}", e);
+        }
+        FastingAppError::PasswordHashError(e) => {
+            println!("Password hash error: {}", e);
+        }
+        FastingAppError::ExistingSessionError => {
+            println!("An existing fasting session is already active.");
+        }
+        FastingAppError::InvalidCredentials => {
+            println!("Invalid username or password.");
+        }
+    }
+}
+
+fn manage_fasting_session(conn: &mut diesel::SqliteConnection, user_id: i32) {
+    // Start a fasting session
+    match start_fasting(conn, user_id, Utc::now().naive_utc()) {
+        Ok(_) => println!("Fasting session started."),
+        Err(e) => handle_error(e),
+    }
+
+    // Stop the fasting session
+    match stop_fasting(conn, user_id, Utc::now().naive_utc()) {
+        Ok(_) => println!("Fasting session stopped."),
+        Err(e) => handle_error(e),
+    }
 }
 
 fn main() {
@@ -40,46 +70,27 @@ fn main() {
     let password = prompt_input("Enter password: ");
 
     // Create a new user
-    match create_user(&mut conn, &username, &password) {
-        Ok(_) => println!("User created successfully."),
-        Err(e) => println!("Error creating user: {:?}", e),
+    if let Err(e) = create_user(&mut conn, &username, &password) {
+        handle_error(e);
+    } else {
+        println!("User created successfully.");
     }
 
     // Log in the user
     match login_user(&mut conn, &username, &password) {
         Ok(user) => {
-            match user.id {
-                Some(id) => println!("Login successful. User ID: {}", id),
-                None => println!("Login successful. User ID is not available."),
-            }
-
-            // Start a fasting session
-            match start_fasting(&mut conn, user.id.unwrap_or(-1), Utc::now().naive_utc()) {
-                Ok(_) => println!("Fasting session started."),
-                Err(e) => println!("Error starting fasting session: {:?}", e),
-            }
-
-            // Stop the fasting session
-            match stop_fasting(&mut conn, user.id.unwrap_or(-1), Utc::now().naive_utc()) {
-                Ok(_) => println!("Fasting session stopped."),
-                Err(e) => println!("Error stopping fasting session: {:?}", e),
+            if let Some(id) = user.id {
+                println!("Login successful. User ID: {}", id);
+                manage_fasting_session(&mut conn, id);
+            } else {
+                println!("Login successful, but User ID is not available.");
             }
         }
-        Err(e) => println!("Error logging in: {:?}", e),
+        Err(e) => handle_error(e),
     }
 
     // Example error handling for another function
     if let Err(error) = some_function_that_might_fail() {
-        match error {
-            FastingAppError::InvalidRequest(msg) => {
-                println!("Invalid request: {}", msg);
-            }
-            FastingAppError::DatabaseError(e) => {
-                println!("Database error: {}", e);
-            }
-            FastingAppError::PasswordHashError(e) => {
-                println!("Password hash error: {}", e);
-            }
-        }
+        handle_error(error);
     }
 }
