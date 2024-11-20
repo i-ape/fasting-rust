@@ -6,17 +6,19 @@ use chrono::Utc;
 use dotenv::dotenv;
 use std::io::{self, Write};
 
-mod handlers;
-use handlers::{create_user, login_user, start_fasting, stop_fasting};
-
 mod db;
 mod errors;
+mod handlers;
 mod models;
 mod schema;
+mod users;
 
 use crate::db::establish_connection;
 use crate::errors::FastingAppError;
+use crate::users::{create_user, login_user, register_user, update_user_profile};
+use crate::handlers::{start_fasting, stop_fasting};
 
+/// Prompts the user for input with the given message.
 fn prompt_input(message: &str) -> String {
     print!("{}", message);
     io::stdout().flush().unwrap();
@@ -25,6 +27,7 @@ fn prompt_input(message: &str) -> String {
     input.trim().to_string()
 }
 
+/// Handles application-level errors in a centralized way.
 fn handle_error(error: FastingAppError) {
     match error {
         FastingAppError::InvalidRequest(msg) => {
@@ -45,6 +48,7 @@ fn handle_error(error: FastingAppError) {
     }
 }
 
+/// Manages a user's fasting session (start and stop).
 fn manage_fasting_session(conn: &mut diesel::SqliteConnection, user_id: i32) {
     // Start a fasting session
     match start_fasting(conn, user_id, Utc::now().naive_utc()) {
@@ -65,32 +69,63 @@ fn main() {
     // Establish the database connection
     let mut conn = establish_connection();
 
-    // Get input from the user
-    let username = prompt_input("Enter username: ");
-    let password = prompt_input("Enter password: ");
+    loop {
+        // Prompt the user for an action
+        let choice = prompt_input("\nChoose an action: register, login, update, or exit: ").to_lowercase();
 
-    // Create a new user
-    if let Err(e) = create_user(&mut conn, &username, &password) {
-        handle_error(e);
-    } else {
-        println!("User created successfully.");
-    }
+        match choice.as_str() {
+            "register" => {
+                let username = prompt_input("Enter a new username: ");
+                let password = prompt_input("Enter a new password: ");
 
-    // Log in the user
-    match login_user(&mut conn, &username, &password) {
-        Ok(user) => {
-            if let Some(id) = user.id {
-                println!("Login successful. User ID: {}", id);
-                manage_fasting_session(&mut conn, id);
-            } else {
-                println!("Login successful, but User ID is not available.");
+                match register_user(&mut conn, &username, &password) {
+                    Ok(_) => println!("User registered successfully."),
+                    Err(e) => handle_error(e),
+                }
             }
-        }
-        Err(e) => handle_error(e),
-    }
+            "login" => {
+                let username = prompt_input("Enter your username: ");
+                let password = prompt_input("Enter your password: ");
 
-    // Example error handling for another function
-    if let Err(error) = some_function_that_might_fail() {
-        handle_error(error);
+                match login_user(&mut conn, &username, &password) {
+                    Ok(user) => {
+                        if let Some(id) = user.id {
+                            println!("Login successful. User ID: {}", id);
+                            manage_fasting_session(&mut conn, id);
+                        } else {
+                            println!("Login successful, but User ID is not available.");
+                        }
+                    }
+                    Err(e) => handle_error(e),
+                }
+            }
+            "update" => {
+                let user_id: i32 = prompt_input("Enter your User ID: ").parse().unwrap_or(-1);
+                if user_id < 0 {
+                    println!("Invalid User ID.");
+                    continue;
+                }
+
+                let mut new_username = Some(prompt_input("Enter a new username (or press Enter to skip): "));
+                let mut new_password = Some(prompt_input("Enter a new password (or press Enter to skip): "));
+
+                if new_username.as_deref() == Some("") {
+                    new_username = None;
+                }
+                if new_password.as_deref() == Some("") {
+                    new_password = None;
+                }
+
+                match update_user_profile(&mut conn, user_id, new_username.as_deref(), new_password.as_deref()) {
+                    Ok(_) => println!("User profile updated successfully."),
+                    Err(e) => handle_error(e),
+                }
+            }
+            "exit" => {
+                println!("Goodbye!");
+                break;
+            }
+            _ => println!("Invalid action. Please try again."),
+        }
     }
 }
