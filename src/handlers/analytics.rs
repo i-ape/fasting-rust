@@ -2,7 +2,7 @@ use crate::errors::FastingAppError;
 use crate::models::FastingEvent;
 use crate::schema::fasting_events::dsl::{fasting_events, start_time, user_id as schema_user_id};
 use crate::schema::fasting_events::stop_time;
-use chrono::{Duration, NaiveDateTime, Utc};
+use chrono::{NaiveDateTime, Utc};
 use diesel::prelude::*;
 use diesel::SqliteConnection;
 
