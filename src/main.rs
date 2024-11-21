@@ -15,7 +15,9 @@ mod users;
 
 use crate::db::establish_connection;
 use crate::errors::FastingAppError;
-use crate::users::{create_user, login_user, register_user, update_user_profile};
+use fasting_rust::users::{
+    create_user, find_user_by_username, login_user, register_user, update_user_profile,
+};
 use crate::handlers::{start_fasting, stop_fasting};
 
 /// Prompts the user for input with the given message.
