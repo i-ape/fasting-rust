@@ -10,6 +10,7 @@ pub enum FastingAppError {
     ExistingSessionError,
     InvalidCredentials,
     InvalidRequest(String),
+    ConnectionError,
 }
 
 /// Implement `std::fmt::Display` for user-friendly error messages.
