@@ -1,6 +1,6 @@
 use crate::schema::{fasting_events, users};
 use chrono::NaiveDateTime;
-use diesel::{prelude::{Identifiable, QueryableByName}, Insertable, Queryable, Selectable};
+use diesel::{prelude::Identifiable, Insertable, Queryable, Selectable};
 
 #[derive(Queryable, Selectable)]
 #[diesel(table_name = users)] 
