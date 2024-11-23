@@ -10,8 +10,9 @@ pub enum FastingAppError {
     ExistingSessionError,
     InvalidCredentials,
     InvalidRequest(String),
-    ConnectionError,
+    ConnectionError(String), // Tuple variant for detailed errors
 }
+
 
 /// Implement `std::fmt::Display` for user-friendly error messages.
 impl fmt::Display for FastingAppError {

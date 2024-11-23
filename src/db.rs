@@ -15,8 +15,9 @@ pub fn establish_connection() -> Result<SqliteConnection, FastingAppError> {
     })?;
     
     SqliteConnection::establish(&database_url)
-        .map_err(|_| FastingAppError::ConnectionError) // Map any Diesel connection error to `ConnectionError`
+        .map_err(|err| FastingAppError::ConnectionError(format!("Failed to connect: {}", err)))
 }
+
 
 /// Creates a connection pool for multithreaded applications
 pub fn establish_pool() -> Result<DbPool, FastingAppError> {
