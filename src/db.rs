@@ -13,9 +13,9 @@ pub fn establish_connection() -> Result<SqliteConnection, FastingAppError> {
     let database_url = env::var("DATABASE_URL").map_err(|_| {
         FastingAppError::InvalidRequest("DATABASE_URL must be set".to_string())
     })?;
-    SqliteConnection::establish(&database_url).map_err(|err| {
-        FastingAppError::DatabaseError(diesel::result::Error::ConnectionError(Box::new(err.to_string())))
-    })
+    
+    SqliteConnection::establish(&database_url)
+        .map_err(|_| FastingAppError::ConnectionError) // Map any Diesel connection error to `ConnectionError`
 }
 
 /// Creates a connection pool for multithreaded applications

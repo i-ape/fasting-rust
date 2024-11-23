@@ -47,6 +47,9 @@ fn handle_error(error: FastingAppError) {
         FastingAppError::InvalidCredentials => {
             println!("Invalid username or password.");
         }
+        FastingAppError::ConnectionError => {
+            println!("Failed to connect to the database.");
+        }
     }
 }
 
@@ -65,8 +68,17 @@ fn manage_fasting_session(conn: &mut diesel::SqliteConnection, user_id: i32) {
     }
 }
 
+/// Demonstrates the `ConnectionError` variant for testing.
+fn demonstrate_connection_error() {
+    let connection_error = FastingAppError::ConnectionError;
+    println!("Demonstration Error: {}", connection_error); // Output: Failed to connect to the database.
+}
+
 fn main() {
     dotenv().ok();
+
+    // Call the demonstration function at the beginning of the main function
+    demonstrate_connection_error();
 
     // Establish the database connection
     let mut conn = establish_connection();

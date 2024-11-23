@@ -22,6 +22,8 @@ impl fmt::Display for FastingAppError {
             FastingAppError::ExistingSessionError => write!(f, "An existing fasting session is active."),
             FastingAppError::InvalidCredentials => write!(f, "Invalid username or password."),
             FastingAppError::InvalidRequest(msg) => write!(f, "Invalid request: {}", msg),
+            FastingAppError::ConnectionError => write!(f, "Failed to connect to the database."),
+            _ => write!(f, "An unknown error occurred."),
         }
     }
 }
