@@ -15,8 +15,9 @@ pub fn establish_connection() -> Result<SqliteConnection, FastingAppError> {
     })?;
     
     SqliteConnection::establish(&database_url)
-        .map_err(|_| FastingAppError::ConnectionError) // Map Diesel errors to your ConnectionError
+        .map_err(|err| FastingAppError::ConnectionError(format!("Failed to connect: {}", err))) // Provide a String
 }
+
 
 /// Create a connection pool for multithreaded applications
 pub fn establish_pool() -> Result<DbPool, FastingAppError> {
@@ -24,14 +25,16 @@ pub fn establish_pool() -> Result<DbPool, FastingAppError> {
     let database_url = env::var("DATABASE_URL").map_err(|_| {
         FastingAppError::InvalidRequest("DATABASE_URL must be set".to_string())
     })?;
+    
     let manager = ConnectionManager::<SqliteConnection>::new(database_url);
+
     Pool::builder()
         .build(manager)
-        .map_err(|_| FastingAppError::ConnectionError)
+        .map_err(|err| FastingAppError::ConnectionError(format!("Failed to create connection pool: {}", err))) // Provide a String
 }
 
 /// Helper function to get a connection from the pool
 pub fn get_connection(pool: &DbPool) -> Result<diesel::r2d2::PooledConnection<ConnectionManager<SqliteConnection>>, FastingAppError> {
     pool.get()
-        .map_err(|_| FastingAppError::ConnectionError) // Map connection pool errors to your ConnectionError
+        .map_err(|err| FastingAppError::ConnectionError(format!("Failed to get connection from pool: {}", err)))
 }
