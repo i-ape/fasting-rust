@@ -10,7 +10,7 @@ pub enum FastingAppError {
     ExistingSessionError,
     InvalidCredentials,
     InvalidRequest(String),
-    ConnectionError(String), // Tuple variant for detailed errors
+    ConnectionError(String),
 }
 
 
