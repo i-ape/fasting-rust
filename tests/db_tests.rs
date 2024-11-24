@@ -2,8 +2,8 @@
 mod db_tests {
     use dotenv::dotenv;
     use std::env;
-    use crate::db::{establish_connection, establish_pool, get_connection};
-    use crate::errors::FastingAppError;
+    use crate::fasting_rust::db::{establish_connection, establish_pool, get_connection};
+    use crate::fasting_rust::errors::FastingAppError;
 
     #[test]
     fn test_establish_connection_success() {
