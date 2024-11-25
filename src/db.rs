@@ -38,3 +38,16 @@ pub fn get_connection(pool: &DbPool) -> Result<diesel::r2d2::PooledConnection<Co
     pool.get()
         .map_err(|err| FastingAppError::ConnectionError(format!("Failed to get connection from pool: {}", err)))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use dotenv::dotenv;
+
+    #[test]
+    fn test_establish_connection_success() {
+        dotenv().ok();
+        let connection = establish_connection();
+        assert!(connection.is_ok(), "Expected connection to succeed, but it failed.");
+    }
+}
