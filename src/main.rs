@@ -47,8 +47,8 @@ fn handle_error(error: FastingAppError) {
         FastingAppError::InvalidCredentials => {
             println!("Invalid username or password.");
         }
-        FastingAppError::ConnectionError => {
-            println!("Failed to connect to the database.");
+        FastingAppError::ConnectionError(err) => {
+            println!("Failed to connect to the database: {}", err);
         }
     }
 }
