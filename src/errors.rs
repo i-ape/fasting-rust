@@ -15,15 +15,16 @@ pub enum FastingAppError {
 
 
 /// Implement `std::fmt::Display` for user-friendly error messages.
-impl fmt::Display for FastingAppError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl std::fmt::Display for FastingAppError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             FastingAppError::DatabaseError(e) => write!(f, "Database error: {}", e),
-            FastingAppError::PasswordHashError(e) => write!(f, "Password hashing error: {}", e),
-            FastingAppError::ExistingSessionError => write!(f, "An existing fasting session is active."),
+            FastingAppError::PasswordHashError(e) => write!(f, "Password hash error: {}", e),
+            FastingAppError::ExistingSessionError => write!(f, "An existing fasting session is already active."),
             FastingAppError::InvalidCredentials => write!(f, "Invalid username or password."),
             FastingAppError::InvalidRequest(msg) => write!(f, "Invalid request: {}", msg),
-            FastingAppError::ConnectionError(err) => write!(f, "Failed to connect to the database: {}", err),
+            FastingAppError::ConnectionError(err) => write!(f, "Connection error: {}", err),
+            #[allow(unreachable_patterns)]
             _ => write!(f, "An unknown error occurred."),
         }
     }
