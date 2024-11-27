@@ -70,8 +70,10 @@ fn manage_fasting_session(conn: &mut diesel::SqliteConnection, user_id: i32) {
 
 /// Demonstrates the `ConnectionError` variant for testing.
 fn demonstrate_connection_error() {
-    let connection_error = errors::FastingAppError::ConnectionError;
-    println!("Demonstration Error: {}", connection_error); // Output: Failed to connect to the database.
+    let connection_error = FastingAppError::ConnectionError("Failed to connect to the database".to_string());
+
+    // Use the instance
+    println!("Demonstration Error: {}", connection_error);
 }
 
 fn main() {
