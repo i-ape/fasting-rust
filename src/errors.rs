@@ -46,3 +46,16 @@ impl From<BcryptError> for FastingAppError {
         FastingAppError::PasswordHashError(error)
     }
 }
+#[cfg(test)]
+mod tests {
+    use super::FastingAppError;
+
+    #[test]
+    fn test_connection_error_display() {
+        let connection_error = FastingAppError::ConnectionError("Failed to connect to the database".to_string());
+        assert_eq!(
+            format!("{}", connection_error),
+            "Connection error: Failed to connect to the database"
+        );
+    }
+}

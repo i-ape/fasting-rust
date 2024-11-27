@@ -18,7 +18,7 @@ use crate::db::establish_connection;
 use crate::errors::FastingAppError;
 use crate::handlers::{start_fasting, stop_fasting};
 use crate::users::{register_user, login_user, update_user_profile};
-use crate::utils::handle_error;
+use crate::utils::{prompt_input, manage_fasting_session};
 
 fn prompt_input(message: &str) -> String {
     print!("{}", message);
@@ -118,3 +118,4 @@ fn main() {
         }
     }
 }
+
