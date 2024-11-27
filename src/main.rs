@@ -2,7 +2,10 @@ extern crate bcrypt;
 extern crate diesel;
 extern crate dotenv;
 
+use db::establish_connection;
 use dotenv::dotenv;
+use users::{login_user, register_user};
+use utils::{handle_error, prompt_input};
 mod db;
 mod errors;
 mod handlers;
