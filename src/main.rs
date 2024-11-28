@@ -3,6 +3,8 @@ extern crate diesel;
 extern crate dotenv;
 
 
+use std::io::{self, Write};
+
 use crate::errors::handle_error;
 use db::establish_connection;
 use dotenv::dotenv;
@@ -13,7 +15,6 @@ mod handlers;
 mod models;
 mod schema;
 mod users;
-mod utils;
 
 fn prompt_input(message: &str) -> String {
     print!("{}", message);
