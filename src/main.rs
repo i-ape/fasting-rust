@@ -2,10 +2,11 @@ extern crate bcrypt;
 extern crate diesel;
 extern crate dotenv;
 
+
+use crate::errors::handle_error;
 use db::establish_connection;
 use dotenv::dotenv;
 use users::{login_user, register_user};
-use utils::{handle_error, prompt_input};
 mod db;
 mod errors;
 mod handlers;
@@ -13,6 +14,14 @@ mod models;
 mod schema;
 mod users;
 mod utils;
+
+fn prompt_input(message: &str) -> String {
+    print!("{}", message);
+    io::stdout().flush().unwrap();
+    let mut input = String::new();
+    io::stdin().read_line(&mut input).unwrap();
+    input.trim().to_string()
+}
 
 fn main() {
     dotenv().ok();

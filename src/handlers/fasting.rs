@@ -1,9 +1,10 @@
-use crate::errors::FastingAppError;
+use crate::errors::{handle_error, FastingAppError};
 use crate::models::{FastingEvent, NewFastingEvent};
 use crate::schema::fasting_events::dsl::{user_id as schema_user_id, fasting_events, start_time as schema_start_time, stop_time};
 use chrono::{NaiveDateTime, Utc};
 use diesel::prelude::*;
 use diesel::SqliteConnection;
+
 
 /// Starts a new fasting event for a user
 pub fn start_fasting(
@@ -69,4 +70,16 @@ fn find_active_fasting_event(
         .first::<FastingEvent>(conn)
         .optional()
         .map_err(FastingAppError::DatabaseError)
+}
+
+pub fn manage_fasting_session(conn: &mut diesel::SqliteConnection, user_id: i32) {
+    match start_fasting(conn, user_id, chrono::Utc::now().naive_utc()) {
+        Ok(_) => println!("Fasting session started."),
+        Err(e) => handle_error(e),
+    }
+
+    match stop_fasting(conn, user_id, chrono::Utc::now().naive_utc()) {
+        Ok(_) => println!("Fasting session stopped."),
+        Err(e) => handle_error(e),
+    }
 }

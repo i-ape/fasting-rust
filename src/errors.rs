@@ -1,6 +1,5 @@
 use bcrypt::BcryptError;
 use diesel::result::Error as DieselError;
-use std::fmt;
 
 /// Centralized error type for the Fasting App.
 #[derive(Debug)]
@@ -12,7 +11,28 @@ pub enum FastingAppError {
     InvalidRequest(String),
     ConnectionError(String),
 }
-
+pub fn handle_error(error: FastingAppError) {
+    match error {
+        FastingAppError::InvalidRequest(msg) => {
+            eprintln!("Invalid request: {}", msg);
+        }
+        FastingAppError::DatabaseError(e) => {
+            eprintln!("Database error: {}", e);
+        }
+        FastingAppError::PasswordHashError(e) => {
+            eprintln!("Password hash error: {}", e);
+        }
+        FastingAppError::ExistingSessionError => {
+            eprintln!("An existing fasting session is already active.");
+        }
+        FastingAppError::InvalidCredentials => {
+            eprintln!("Invalid username or password.");
+        }
+        FastingAppError::ConnectionError(err) => {
+            eprintln!("Connection error: {}", err);
+        }
+    }
+}
 
 /// Implement `std::fmt::Display` for user-friendly error messages.
 impl std::fmt::Display for FastingAppError {
