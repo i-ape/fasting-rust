@@ -9,7 +9,7 @@ use crate::errors::handle_error;
 use db::establish_connection;
 use dotenv::dotenv;
 use handlers::fasting::manage_fasting_session;
-use users::{login_user, register_user, update_user_profile};
+use crate::users::{create_user, find_user_by_username, login_user, register_user, update_user_profile};
 mod db;
 mod errors;
 mod handlers;
