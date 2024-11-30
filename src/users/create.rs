@@ -1,6 +1,6 @@
 use crate::errors::FastingAppError;
 use crate::models::NewUser;
-use crate::schema::users::dsl::{hashed_password, username, users};
+use crate::schema::users::dsl::users;
 use bcrypt::{hash, DEFAULT_COST};
 use diesel::prelude::*;
 use diesel::SqliteConnection;

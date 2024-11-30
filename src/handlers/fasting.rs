@@ -1,6 +1,6 @@
 use crate::errors::{handle_error, FastingAppError};
 use crate::models::{FastingEvent, NewFastingEvent};
-use crate::schema::fasting_events::dsl::{user_id as schema_user_id, fasting_events, start_time as schema_start_time, stop_time};
+use crate::schema::fasting_events::dsl::{user_id as schema_user_id, fasting_events, stop_time};
 use chrono::{NaiveDateTime, Utc};
 use diesel::prelude::*;
 use diesel::SqliteConnection;
