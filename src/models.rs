@@ -1,14 +1,16 @@
 use crate::schema::{fasting_events, users};
 use chrono::NaiveDateTime;
-use diesel::{prelude::Identifiable, Insertable, Queryable, Selectable};
+use diesel::{prelude::{AsChangeset, Identifiable}, Insertable, Queryable, Selectable};
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Insertable, AsChangeset, Identifiable, Debug)]
 #[diesel(table_name = users)] 
 pub struct User {
     pub id: Option<i32>,
     pub username: String,
     pub hashed_password: String,
     pub created_at: Option<NaiveDateTime>,
+    pub device_id: Option<String>, // Add this field
+
 }
 
 
