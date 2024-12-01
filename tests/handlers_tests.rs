@@ -32,14 +32,18 @@ fn test_create_user() {
 }
 
 #[test]
-fn test_login_user_success() {
-    let mut conn = establish_test_connection();
-    let username = &str;
-    let password: &str = &str;
+fn test_login_user() {
+    dotenv().ok(); // Load environment variables
+    let mut conn = establish_connection();
 
-    create_user(&mut conn, username, password).unwrap();
+    // Ensure username and password are &str
+    let username = "test_user";
+    let password = "test_password";
+
+    // Call the function
     let user = login_user(&mut conn, username, password);
-    assert!(user.is_ok());
+
+    assert!(user.is_ok(), "Expected login to succeed, but it failed.");
 }
 
 // Additional tests for start_fasting, stop_fasting, etc.
