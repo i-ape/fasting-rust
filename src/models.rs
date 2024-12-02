@@ -9,10 +9,8 @@ pub struct User {
     pub username: String,
     pub hashed_password: String,
     pub created_at: Option<NaiveDateTime>,
-    pub device_id: Option<String>, // Add this field
-
+    pub device_id: Option<String>,
 }
-
 
 #[derive(Queryable)]
 pub struct UserPartial {
