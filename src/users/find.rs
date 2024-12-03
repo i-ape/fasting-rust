@@ -11,6 +11,7 @@ pub fn find_user_by_username(
 ) -> Result<User, FastingAppError> {
     users
         .filter(username.eq(username_input))
+        .select(User::as_select())
         .first::<User>(conn)
         .optional()
         .map_err(FastingAppError::DatabaseError)?
