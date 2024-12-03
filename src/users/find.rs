@@ -1,10 +1,9 @@
 use crate::errors::FastingAppError;
 use crate::models::User;
-use crate::schema::users::dsl::{username, users};
+use crate::schema::users::dsl::*;
 use diesel::prelude::*;
 use diesel::SqliteConnection;
 
-/// Finds a user by their username in the database.
 pub fn find_user_by_username(
     conn: &mut SqliteConnection,
     username_input: &str,

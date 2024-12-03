@@ -4,6 +4,7 @@ use diesel::{prelude::{AsChangeset, Identifiable}, Insertable, Queryable, Select
 
 #[derive(Queryable, Insertable, AsChangeset, Identifiable, Debug)]
 #[diesel(table_name = users)] 
+#[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 pub struct User {
     pub id: Option<i32>,
     pub username: String,
