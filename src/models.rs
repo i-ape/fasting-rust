@@ -3,7 +3,7 @@ use chrono::NaiveDateTime;
 use diesel::prelude::*; // Diesel prelude includes commonly used traits.
 
 /// Represents a user in the database.
-#[derive(Queryable, Insertable, AsChangeset, Identifiable, Debug)]
+#[derive(Queryable, Insertable, AsChangeset, Identifiable, Selectable, Debug)] // Added Selectable
 #[diesel(table_name = users)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 pub struct User {
