@@ -61,14 +61,12 @@ pub fn login_user_or_device(
     device_id_input: Option<&str>,
 ) -> Result<User, FastingAppError> {
     match device_id_input {
-        Some(device_id) => {
-            // Login using device ID
-            return find_user_by_device_id(conn, device_id);
+        Some(device_id_value) => {
+            return find_user_by_device_id(conn, device_id_value);
         }
         None => {
-            if let (Some(username), Some(password)) = (username_input, password_input) {
-                // Login using username and password
-                return login_user(conn, username, password);
+            if let (Some(input_username), Some(input_password)) = (username_input, password_input) {
+                return login_user(conn, input_username, input_password);
             }
         }
     }
@@ -77,3 +75,4 @@ pub fn login_user_or_device(
         "Must provide either device ID or username/password.".to_string(),
     ))
 }
+
