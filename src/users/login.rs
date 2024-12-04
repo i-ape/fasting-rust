@@ -2,7 +2,7 @@ use crate::errors::FastingAppError;
 use crate::models::User;
 use bcrypt::verify;
 use diesel::prelude::*;
-use crate::schema::users::dsl::{device_id, id, users};
+use crate::schema::users::dsl::*;
 use super::find::find_user_by_username;
 
 /// Logs in a user by verifying their username and password.
@@ -28,6 +28,7 @@ pub fn find_user_by_device_id(
 ) -> Result<User, FastingAppError> {
     users
         .filter(device_id.eq(device_id_input))
+        .select(User::as_select())
         .first::<User>(conn)
         .optional()
         .map_err(FastingAppError::DatabaseError)?

@@ -7,11 +7,11 @@ use diesel::prelude::*; // Diesel prelude includes commonly used traits.
 #[diesel(table_name = users)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 pub struct User {
-    pub id: Option<i32>,              // User ID (nullable for new inserts).
-    pub username: String,             // Unique username for the user.
-    pub hashed_password: String,      // Hashed password for authentication.
-    pub created_at: Option<NaiveDateTime>, // Timestamp of user creation.
-    pub device_id: Option<String>,    // Optional device ID for tracking.
+    pub id: Option<i32>,                // Nullable<Integer>
+    pub username: String,              // Text
+    pub hashed_password: String,       // Text
+    pub device_id: Option<String>,     // Nullable<Text>
+    pub created_at: Option<NaiveDateTime>, // Nullable<Timestamp>
 }
 
 /// Represents a new user to be inserted into the database.
