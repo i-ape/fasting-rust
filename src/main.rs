@@ -2,7 +2,6 @@ extern crate bcrypt;
 extern crate diesel;
 extern crate dotenv;
 
-
 use std::io::{self, Write};
 
 use crate::errors::handle_error;
@@ -10,6 +9,7 @@ use db::establish_connection;
 use dotenv::dotenv;
 use handlers::fasting::manage_fasting_session;
 use crate::users::*;
+use crate::users::login::{login_user_or_device, associate_device_id};
 mod db;
 mod errors;
 mod handlers;
@@ -37,11 +37,12 @@ fn main() {
     };
 
     loop {
-        let choice = prompt_input("\nChoose an action: register, login, update, or exit: ").to_lowercase();
+        let choice = prompt_input("\nChoose an action: register, login, associate, update, or exit: ").to_lowercase();
 
         match choice.as_str() {
             "register" => handle_register(&mut conn),
             "login" => handle_login(&mut conn),
+            "associate" => handle_associate_device(&mut conn),
             "update" => handle_update(&mut conn),
             "exit" => {
                 println!("Goodbye!");
@@ -63,18 +64,67 @@ fn handle_register(conn: &mut diesel::SqliteConnection) {
 }
 
 fn handle_login(conn: &mut diesel::SqliteConnection) {
-    let username = prompt_input("Enter your username: ");
-    let password = prompt_input("Enter your password: ");
+    println!("Login options:");
+    println!("1. Username and password");
+    println!("2. Device ID");
 
-    match login_user(conn, &username, &password) {
-        Ok(user) => {
-            if let Some(id) = user.id {
-                println!("Login successful. User ID: {}", id);
-                manage_fasting_session(conn, id);
-            } else {
-                println!("Login successful, but User ID is not available.");
+    let login_choice = prompt_input("Choose a login method (1 or 2): ");
+
+    match login_choice.as_str() {
+        "1" => {
+            let username = prompt_input("Enter your username: ");
+            let password = prompt_input("Enter your password: ");
+
+            match login_user_or_device(conn, Some(&username), Some(&password), None) {
+                Ok(user) => {
+                    if let Some(id) = user.id {
+                        println!("Login successful. User ID: {}", id);
+                        manage_fasting_session(conn, id);
+
+                        // Optionally associate a device ID after username/password login
+                        let associate = prompt_input("Do you want to associate a device ID with your account? (yes/no): ");
+                        if associate.to_lowercase() == "yes" {
+                            handle_associate_device(conn);
+                        }
+                    } else {
+                        println!("Login successful, but User ID is not available.");
+                    }
+                }
+                Err(e) => handle_error(e),
             }
         }
+        "2" => {
+            let device_id = prompt_input("Enter your device ID: ");
+
+            match login_user_or_device(conn, None, None, Some(&device_id)) {
+                Ok(user) => {
+                    if let Some(id) = user.id {
+                        println!("Login successful. User ID: {}", id);
+                        manage_fasting_session(conn, id);
+                    } else {
+                        println!("Login successful, but User ID is not available.");
+                    }
+                }
+                Err(e) => handle_error(e),
+            }
+        }
+        _ => println!("Invalid choice. Please try again."),
+    }
+}
+
+fn handle_associate_device(conn: &mut diesel::SqliteConnection) {
+    let user_id: i32 = match prompt_input("Enter your User ID: ").parse() {
+        Ok(id) if id >= 0 => id,
+        _ => {
+            println!("Invalid User ID. Please enter a positive integer.");
+            return;
+        }
+    };
+
+    let device_id = prompt_input("Enter your device ID: ");
+
+    match associate_device_id(conn, user_id, &device_id) {
+        Ok(_) => println!("Device ID associated successfully."),
         Err(e) => handle_error(e),
     }
 }
