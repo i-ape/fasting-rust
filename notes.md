@@ -35,3 +35,6 @@
 └── utils.rs
 
 this is my tree, i recently altered main alot to make it a node rather than the main process, this maybe kinda dumb cause i have a mental amount of errors
+
+
+integrated login functions into main, tomorrow hopefully I can get the rest of the user folder to function through main
