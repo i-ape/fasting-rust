@@ -8,7 +8,8 @@ use crate::errors::handle_error;
 use db::establish_connection;
 use dotenv::dotenv;
 use handlers::fasting::manage_fasting_session;
-use crate::users::{register_user, login_user, login_user_or_device, associate_device_id, update_user_profile};
+use crate::users::{register_user, login_user, login_user_or_device, associate_device_id, update_user_profile, find_user_by_device_id};
+use crate::users::find::find_user_by_username;
 
 mod db;
 mod errors;
@@ -41,13 +42,14 @@ fn main() {
 
     // Main program loop
     loop {
-        let choice = prompt_input("\nChoose an action: register, login, associate, update, or exit: ").to_lowercase();
+        let choice = prompt_input("\nChoose an action: register, login, associate, update, find, or exit: ").to_lowercase();
 
         match choice.as_str() {
             "register" => handle_register(&mut conn),
             "login" => handle_login(&mut conn),
             "associate" => handle_device_association(&mut conn),
             "update" => handle_update(&mut conn),
+            "find" => handle_find(&mut conn),
             "exit" => {
                 println!("Goodbye!");
                 break;
@@ -149,5 +151,30 @@ fn handle_update(conn: &mut diesel::SqliteConnection) {
     match update_user_profile(conn, user_id, new_username.as_deref(), new_password.as_deref()) {
         Ok(_) => println!("User profile updated successfully."),
         Err(e) => handle_error(e),
+    }
+}
+
+/// Handles finding a user by username or device ID.
+fn handle_find(conn: &mut diesel::SqliteConnection) {
+    let find_method = prompt_input("Find user by: username or device? (Enter 'username' or 'device'): ").to_lowercase();
+
+    match find_method.as_str() {
+        "username" => {
+            let username = prompt_input("Enter the username: ");
+
+            match find_user_by_username(conn, &username) {
+                Ok(user) => println!("User found: {:?}", user),
+                Err(e) => handle_error(e),
+            }
+        }
+        "device" => {
+            let device_id = prompt_input("Enter the device ID: ");
+
+            match find_user_by_device_id(conn, &device_id) {
+                Ok(user) => println!("User found: {:?}", user),
+                Err(e) => handle_error(e),
+            }
+        }
+        _ => println!("Invalid method. Please enter 'username' or 'device'."),
     }
 }
