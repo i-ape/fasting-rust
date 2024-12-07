@@ -151,7 +151,7 @@ fn handle_update(conn: &mut diesel::SqliteConnection) {
     ) {
         Ok(_) => println!("User profile updated successfully."),
         Err(e) => handle_error(e),
-    }
+    } 
 }
 
 /// Handles viewing a user's fasting history.

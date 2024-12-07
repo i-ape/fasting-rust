@@ -10,6 +10,7 @@ pub fn update_user_profile(
     user_id: i32,
     new_username: Option<&str>,
     new_password: Option<&str>,
+    new_device_id: Option<&str>,
 ) -> Result<usize, FastingAppError> {
     if new_username.is_none() && new_password.is_none() {
         return Err(FastingAppError::InvalidRequest("No updates provided".to_string()));
