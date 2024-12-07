@@ -1,7 +1,9 @@
 use crate::errors::FastingAppError;
-use crate::schema::users::dsl::{hashed_password, username, id, users};
+use crate::schema::users::dsl::{device_id, hashed_password, username, id, users};
 use bcrypt::{hash, DEFAULT_COST};
 use diesel::prelude::*;
+use diesel::query_dsl::methods::FilterDsl;
+//use diesel::query_dsl::UpdateAndFetchResultsDsl;
 use diesel::SqliteConnection;
 
 /// Updates user profile details.
@@ -12,34 +14,31 @@ pub fn update_user_profile(
     new_password: Option<&str>,
     new_device_id: Option<&str>,
 ) -> Result<usize, FastingAppError> {
-    if new_username.is_none() && new_password.is_none() {
-        return Err(FastingAppError::InvalidRequest("No updates provided".to_string()));
+    if new_username.is_none() && new_password.is_none() && new_device_id.is_none() {
+        return Err(FastingAppError::InvalidRequest(
+            "No updates provided".to_string(),
+        ));
     }
 
-    let query = diesel::update(users.filter(id.eq(user_id)));
+    let mut query = diesel::update(users.filter(id.eq(user_id))).into_boxed();
 
+    // Add username update if provided
     if let Some(username_value) = new_username {
-        if let Some(password_value) = new_password {
-            let hashed_password_value = hash(password_value, DEFAULT_COST)
-                .map_err(FastingAppError::PasswordHashError)?;
-            query
-                .set((username.eq(username_value), hashed_password.eq(hashed_password_value)))
-                .execute(conn)
-                .map_err(FastingAppError::DatabaseError)
-        } else {
-            query
-                .set(username.eq(username_value))
-                .execute(conn)
-                .map_err(FastingAppError::DatabaseError)
-        }
-    } else if let Some(password_value) = new_password {
+        query = query.set(username.eq(username_value));
+    }
+
+    // Add password update if provided
+    if let Some(password_value) = new_password {
         let hashed_password_value = hash(password_value, DEFAULT_COST)
             .map_err(FastingAppError::PasswordHashError)?;
-        query
-            .set(hashed_password.eq(hashed_password_value))
-            .execute(conn)
-            .map_err(FastingAppError::DatabaseError)
-    } else {
-        Err(FastingAppError::InvalidRequest("No updates provided".to_string()))
+        query = query.set(hashed_password.eq(hashed_password_value));
     }
+
+    // Add device_id update if provided
+    if let Some(device_id_value) = new_device_id {
+        query = query.set(device_id.eq(device_id_value));
+    }
+
+    // Execute the final query
+    query.execute(conn).map_err(FastingAppError::DatabaseError)
 }
