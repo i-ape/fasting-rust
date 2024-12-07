@@ -7,13 +7,12 @@ use std::io::{self, Write};
 use crate::errors::handle_error;
 use db::establish_connection;
 use dotenv::dotenv;
+use handlers::fasting::{start_fasting, stop_fasting};
 use handlers::analytics::{
-    get_fasting_history, calculate_average_fasting_duration, calculate_weekly_fasting_summary, calculate_current_streak,
+    get_fasting_history, calculate_average_fasting_duration, calculate_weekly_fasting_summary,
+    calculate_current_streak,
 };
-use handlers::fasting::{start_fasting, stop_fasting, get_current_fasting_status};
-
-use crate::users::{register_user, login_user, login_user_or_device, associate_device_id, update_user_profile, find_user_by_device_id};
-use crate::users::find::find_user_by_username;
+use crate::users::{login_user_or_device, update_user_profile, register_user};
 
 mod db;
 mod errors;
@@ -46,14 +45,19 @@ fn main() {
 
     // Main program loop
     loop {
-        let choice = prompt_input("\nChoose an action: register, login, associate, update, find, or exit: ").to_lowercase();
+        println!("\n=== Fasting App ===");
+        let choice = prompt_input(
+            "\nChoose an action: register, login, update, history, summary, streak, or exit: ",
+        )
+        .to_lowercase();
 
         match choice.as_str() {
             "register" => handle_register(&mut conn),
             "login" => handle_login(&mut conn),
-            "associate" => handle_device_association(&mut conn),
             "update" => handle_update(&mut conn),
-            "find" => handle_find(&mut conn),
+            "history" => handle_fasting_history(&mut conn),
+            "summary" => handle_fasting_summary(&mut conn),
+            "streak" => handle_fasting_streak(&mut conn),
             "exit" => {
                 println!("Goodbye!");
                 break;
@@ -63,7 +67,7 @@ fn main() {
     }
 }
 
-/// Handles the user registration process.
+/// Handles user registration.
 fn handle_register(conn: &mut diesel::SqliteConnection) {
     let username = prompt_input("Enter a new username: ");
     let password = prompt_input("Enter a new password: ");
@@ -74,7 +78,7 @@ fn handle_register(conn: &mut diesel::SqliteConnection) {
     }
 }
 
-/// Handles the user login process, supporting both username/password and device ID login.
+/// Handles user login, supporting both username/password and device ID.
 fn handle_login(conn: &mut diesel::SqliteConnection) {
     let login_method = prompt_input("Login with: username or device? (Enter 'username' or 'device'): ").to_lowercase();
 
@@ -83,11 +87,11 @@ fn handle_login(conn: &mut diesel::SqliteConnection) {
             let username = prompt_input("Enter your username: ");
             let password = prompt_input("Enter your password: ");
 
-            match login_user(conn, &username, &password) {
+            match login_user_or_device(conn, Some(&username), Some(&password), None) {
                 Ok(user) => {
                     if let Some(id) = user.id {
                         println!("Login successful. User ID: {}", id);
-                        manage_fasting_session(conn, id);
+                        handle_fasting_session(conn, id);
                     } else {
                         println!("Login successful, but User ID is not available.");
                     }
@@ -102,7 +106,7 @@ fn handle_login(conn: &mut diesel::SqliteConnection) {
                 Ok(user) => {
                     if let Some(id) = user.id {
                         println!("Login successful using device ID. User ID: {}", id);
-                        manage_fasting_session(conn, id);
+                        handle_fasting_session(conn, id);
                     } else {
                         println!("Login successful using device ID, but User ID is not available.");
                     }
@@ -114,25 +118,7 @@ fn handle_login(conn: &mut diesel::SqliteConnection) {
     }
 }
 
-/// Handles the process of associating a device ID with a user account.
-fn handle_device_association(conn: &mut diesel::SqliteConnection) {
-    let user_id: i32 = match prompt_input("Enter your User ID: ").parse() {
-        Ok(id) if id >= 0 => id,
-        _ => {
-            println!("Invalid User ID. Please enter a positive integer.");
-            return;
-        }
-    };
-
-    let device_id = prompt_input("Enter your device ID to associate: ");
-
-    match associate_device_id(conn, user_id, &device_id) {
-        Ok(_) => println!("Device ID associated successfully."),
-        Err(e) => handle_error(e),
-    }
-}
-
-/// Handles the process of updating user profile details.
+/// Handles user profile updates (username, password, or device ID).
 fn handle_update(conn: &mut diesel::SqliteConnection) {
     let user_id: i32 = match prompt_input("Enter your User ID: ").parse() {
         Ok(id) if id >= 0 => id,
@@ -144,6 +130,7 @@ fn handle_update(conn: &mut diesel::SqliteConnection) {
 
     let mut new_username = Some(prompt_input("Enter a new username (or press Enter to skip): "));
     let mut new_password = Some(prompt_input("Enter a new password (or press Enter to skip): "));
+    let mut new_device_id = Some(prompt_input("Enter a new device ID (or press Enter to skip): "));
 
     if new_username.as_deref() == Some("") {
         new_username = None;
@@ -151,34 +138,85 @@ fn handle_update(conn: &mut diesel::SqliteConnection) {
     if new_password.as_deref() == Some("") {
         new_password = None;
     }
+    if new_device_id.as_deref() == Some("") {
+        new_device_id = None;
+    }
 
-    match update_user_profile(conn, user_id, new_username.as_deref(), new_password.as_deref()) {
+    match update_user_profile(
+        conn,
+        user_id,
+        new_username.as_deref(),
+        new_password.as_deref(),
+        new_device_id.as_deref(),
+    ) {
         Ok(_) => println!("User profile updated successfully."),
         Err(e) => handle_error(e),
     }
 }
 
-/// Handles finding a user by username or device ID.
-fn handle_find(conn: &mut diesel::SqliteConnection) {
-    let find_method = prompt_input("Find user by: username or device? (Enter 'username' or 'device'): ").to_lowercase();
+/// Handles viewing a user's fasting history.
+fn handle_fasting_history(conn: &mut diesel::SqliteConnection) {
+    let user_id: i32 = match prompt_input("Enter your User ID: ").parse() {
+        Ok(id) => id,
+        Err(_) => {
+            println!("Invalid User ID.");
+            return;
+        }
+    };
 
-    match find_method.as_str() {
-        "username" => {
-            let username = prompt_input("Enter the username: ");
-
-            match find_user_by_username(conn, &username) {
-                Ok(user) => println!("User found: {:?}", user),
-                Err(e) => handle_error(e),
+    match get_fasting_history(conn, user_id) {
+        Ok(events) => {
+            println!("Fasting history:");
+            for event in events {
+                println!("{:?}", event);
             }
         }
-        "device" => {
-            let device_id = prompt_input("Enter the device ID: ");
+        Err(e) => handle_error(e),
+    }
+}
 
-            match find_user_by_device_id(conn, &device_id) {
-                Ok(user) => println!("User found: {:?}", user),
-                Err(e) => handle_error(e),
-            }
+/// Handles calculating a user's average fasting duration.
+fn handle_fasting_summary(conn: &mut diesel::SqliteConnection) {
+    let user_id: i32 = match prompt_input("Enter your User ID: ").parse() {
+        Ok(id) => id,
+        Err(_) => {
+            println!("Invalid User ID.");
+            return;
         }
-        _ => println!("Invalid method. Please enter 'username' or 'device'."),
+    };
+
+    match calculate_average_fasting_duration(conn, user_id) {
+        Ok(Some(avg)) => println!("Your average fasting duration is {} minutes.", avg),
+        Ok(None) => println!("No fasting history found."),
+        Err(e) => handle_error(e),
+    }
+}
+
+/// Handles calculating a user's current fasting streak.
+fn handle_fasting_streak(conn: &mut diesel::SqliteConnection) {
+    let user_id: i32 = match prompt_input("Enter your User ID: ").parse() {
+        Ok(id) => id,
+        Err(_) => {
+            println!("Invalid User ID.");
+            return;
+        }
+    };
+
+    match calculate_current_streak(conn, user_id) {
+        Ok(streak) => println!("Your current fasting streak is {} days.", streak),
+        Err(e) => handle_error(e),
+    }
+}
+
+/// Handles a user's fasting session (start and stop).
+fn handle_fasting_session(conn: &mut diesel::SqliteConnection, user_id: i32) {
+    match start_fasting(conn, user_id, chrono::Utc::now().naive_utc()) {
+        Ok(_) => println!("Fasting session started."),
+        Err(e) => handle_error(e),
+    }
+
+    match stop_fasting(conn, user_id, chrono::Utc::now().naive_utc()) {
+        Ok(_) => println!("Fasting session stopped."),
+        Err(e) => handle_error(e),
     }
 }
