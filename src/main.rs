@@ -7,7 +7,11 @@ use std::io::{self, Write};
 use crate::errors::handle_error;
 use db::establish_connection;
 use dotenv::dotenv;
-use handlers::fasting::manage_fasting_session;
+use handlers::analytics::{
+    get_fasting_history, calculate_average_fasting_duration, calculate_weekly_fasting_summary, calculate_current_streak,
+};
+use handlers::fasting::{start_fasting, stop_fasting, get_current_fasting_status};
+
 use crate::users::{register_user, login_user, login_user_or_device, associate_device_id, update_user_profile, find_user_by_device_id};
 use crate::users::find::find_user_by_username;
 
