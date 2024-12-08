@@ -18,16 +18,18 @@ pub fn update_user_profile(
         ));
     }
 
-    let mut query = diesel::update(users.filter(id.eq(user_id)));
+    let query = diesel::update(users.filter(id.eq(user_id)));
 
     // Build the update tuple dynamically
     let updates = (
         new_username.map(|username_value| username.eq(username_value)),
-        new_password.map(|password_value| {
-            let hashed_password_value = hash(password_value, DEFAULT_COST)
-                .map_err(FastingAppError::PasswordHashError)?;
-            Ok(hashed_password.eq(hashed_password_value))
-        }).transpose()?, // Handle potential hashing errors
+        new_password
+            .map(|password_value| {
+                let hashed_password_value = hash(password_value, DEFAULT_COST)
+                    .map_err(FastingAppError::PasswordHashError)?;
+                Ok::<_, FastingAppError>(hashed_password.eq(hashed_password_value))
+            })
+            .transpose()?, // Handle potential hashing errors
         new_device_id.map(|device_id_value| device_id.eq(device_id_value)),
     );
 
