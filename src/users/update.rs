@@ -2,9 +2,7 @@ use crate::errors::FastingAppError;
 use crate::schema::users::dsl::{device_id, hashed_password, username, id, users};
 use bcrypt::{hash, DEFAULT_COST};
 use diesel::prelude::*;
-use diesel::query_dsl::methods::FilterDsl;
-//use diesel::query_dsl::UpdateAndFetchResultsDsl;
-use diesel::SqliteConnection;
+use diesel::sqlite::SqliteConnection;
 
 /// Updates user profile details.
 pub fn update_user_profile(
@@ -20,6 +18,7 @@ pub fn update_user_profile(
         ));
     }
 
+    // Explicitly specify Diesel's `filter` method
     let mut query = diesel::update(users.filter(id.eq(user_id))).into_boxed();
 
     // Add username update if provided
