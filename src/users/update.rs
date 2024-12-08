@@ -18,26 +18,22 @@ pub fn update_user_profile(
         ));
     }
 
-    // Explicitly specify Diesel's `filter` method
-    let mut query = diesel::update(users.filter(id.eq(user_id))).into_boxed();
+    let mut query = diesel::update(users.filter(id.eq(user_id)));
 
-    // Add username update if provided
-    if let Some(username_value) = new_username {
-        query = query.set(username.eq(username_value));
-    }
+    // Build the update tuple dynamically
+    let updates = (
+        new_username.map(|username_value| username.eq(username_value)),
+        new_password.map(|password_value| {
+            let hashed_password_value = hash(password_value, DEFAULT_COST)
+                .map_err(FastingAppError::PasswordHashError)?;
+            Ok(hashed_password.eq(hashed_password_value))
+        }).transpose()?, // Handle potential hashing errors
+        new_device_id.map(|device_id_value| device_id.eq(device_id_value)),
+    );
 
-    // Add password update if provided
-    if let Some(password_value) = new_password {
-        let hashed_password_value = hash(password_value, DEFAULT_COST)
-            .map_err(FastingAppError::PasswordHashError)?;
-        query = query.set(hashed_password.eq(hashed_password_value));
-    }
-
-    // Add device_id update if provided
-    if let Some(device_id_value) = new_device_id {
-        query = query.set(device_id.eq(device_id_value));
-    }
-
-    // Execute the final query
-    query.execute(conn).map_err(FastingAppError::DatabaseError)
+    // Apply the updates
+    query
+        .set(updates)
+        .execute(conn)
+        .map_err(FastingAppError::DatabaseError)
 }
