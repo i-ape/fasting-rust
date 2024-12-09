@@ -48,3 +48,8 @@ currently i have the issues with variables and having consistant info in them be
 
 this is my current structure
 have issues with fn in users either not being used or a weird blocks where code seems to go into black holes and in terminal its says 1 issue, next I want to add user goals and history sections although it may be too early 
+
+did some reading I should do integration tests and do a
+cargo install cargo-expand
+cargo expand
+https://bheisler.github.io/criterion.rs/book/index.html supposedly a good src
