@@ -24,7 +24,7 @@ currently i have the issues with variables and having consistant info in them be
 ├── handlers
 │   ├── analytics.rs
 │   ├── fasting.rs
-│   ├── mod.rs
+│   └── mod.rs
 ├── lib.rs
 ├── main.rs
 ├── models.rs
