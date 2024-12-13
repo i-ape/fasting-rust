@@ -21,8 +21,8 @@ pub fn get_fasting_checkpoints(
     let mut achieved_checkpoints = Vec::new();
 
     for event in events {
-        if let Some(stop_time) = event.stop_time {
-            let duration_hours = stop_time
+        if let Some(actual_stop_time) = event.stop_time {
+            let duration_hours = actual_stop_time
                 .signed_duration_since(event.start_time)
                 .num_hours();
 
@@ -37,6 +37,9 @@ pub fn get_fasting_checkpoints(
     achieved_checkpoints.sort_unstable(); // Ensure checkpoints are sorted
     Ok(achieved_checkpoints)
 }
+
+
+
 /// Retrieves the complete fasting history for a specific user
 pub fn get_fasting_history(
     conn: &mut SqliteConnection,
