@@ -83,25 +83,45 @@ fn handle_login(conn: &mut diesel::SqliteConnection) {
         Err(e) => handle_error(e),
     }
 }
-
 /// Handles updating user profiles.
 fn handle_update(conn: &mut diesel::SqliteConnection) {
     let user_id: i32 = match prompt_input("Enter your User ID: ").parse() {
-        Ok(id) => id,
-        Err(_) => {
-            println!("Invalid User ID.");
+        Ok(id) if id > 0 => id,
+        _ => {
+            println!("Invalid User ID. Please enter a positive integer.");
             return;
         }
     };
 
-    let new_username = Some(prompt_input("Enter a new username (or press Enter to skip): "));
-    let new_password = Some(prompt_input("Enter a new password (or press Enter to skip): "));
+    // Prompt for new username, password, and device ID
+    let mut new_username = Some(prompt_input("Enter a new username (or press Enter to skip): "));
+    let mut new_password = Some(prompt_input("Enter a new password (or press Enter to skip): "));
+    let mut new_device_id = Some(prompt_input("Enter a new device ID (or press Enter to skip): "));
 
-    match update_user_profile(conn, user_id, new_username.as_deref(), new_password.as_deref()) {
+    // Handle empty inputs by setting to `None`
+    if new_username.as_deref() == Some("") {
+        new_username = None;
+    }
+    if new_password.as_deref() == Some("") {
+        new_password = None;
+    }
+    if new_device_id.as_deref() == Some("") {
+        new_device_id = None;
+    }
+
+    // Call `update_user_profile` with all required arguments
+    match update_user_profile(
+        conn,
+        user_id,
+        new_username.as_deref(),
+        new_password.as_deref(),
+        new_device_id.as_deref(),
+    ) {
         Ok(_) => println!("User profile updated successfully."),
         Err(e) => handle_error(e),
     }
 }
+
 
 /// Handles fasting checkpoints.
 fn handle_checkpoints(conn: &mut diesel::SqliteConnection) {
