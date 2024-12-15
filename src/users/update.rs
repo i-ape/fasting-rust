@@ -1,5 +1,5 @@
 use crate::errors::FastingAppError;
-use crate::schema::users::dsl::{device_id, hashed_password, username, id, users};
+use crate::schema::users::dsl::{device_id, hashed_password, id, username, users};
 use bcrypt::{hash, DEFAULT_COST};
 use diesel::prelude::*;
 use diesel::sqlite::SqliteConnection;
@@ -19,28 +19,25 @@ pub fn update_user_profile(
         ));
     }
 
-    let mut updates = Vec::new();
+    // Dynamically build the update tuple
+    let mut query = diesel::update(users.filter(id.eq(user_id)));
 
-    // Add username update if provided
     if let Some(username_value) = new_username {
-        updates.push(username.eq(username_value));
+        query = query.set(username.eq(username_value));
     }
 
-    // Add password update if provided
     if let Some(password_value) = new_password {
         let hashed_password_value = hash(password_value, DEFAULT_COST)
             .map_err(FastingAppError::PasswordHashError)?;
-        updates.push(hashed_password.eq(hashed_password_value));
+        query = query.set(hashed_password.eq(hashed_password_value));
     }
 
-    // Add device ID update if provided
     if let Some(device_id_value) = new_device_id {
-        updates.push(device_id.eq(device_id_value));
+        query = query.set(device_id.eq(device_id_value));
     }
 
-    // Execute the update query with the constructed updates
-    diesel::update(users.filter(id.eq(user_id)))
-        .set(updates)
+    // Execute the query
+    query
         .execute(conn)
         .map_err(FastingAppError::DatabaseError)
 }
