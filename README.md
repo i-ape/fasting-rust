@@ -31,13 +31,6 @@ currently i have the issues with variables and having consistant info in them be
 ├── notifications.rs
 ├── schema.rs
 ├── temp_handlers.rs
-├── tests
-│   ├── analytics_tests.rs
-│   ├── db_tests.rs
-│   ├── fasting_tests.rs
-│   ├── handlers_tests.rs
-│   ├── mod.rs
-│   └── user_tests.rs
 ├── users
 │   ├── create.rs
 │   ├── find.rs
@@ -53,3 +46,4 @@ did some reading I should do integration tests and do a
 cargo install cargo-expand
 cargo expand
 https://bheisler.github.io/criterion.rs/book/index.html supposedly a good src
+must find a way to do merges and pull requests from mobile
