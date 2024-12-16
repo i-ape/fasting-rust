@@ -22,16 +22,20 @@ mod models;
 mod schema;
 mod users;
 
-/// Prompts the user for input with a given message.
-fn prompt_input(message: &str) -> String {
+/// Generic function to prompt input.
+fn prompt_input<T: std::str::FromStr>(message: &str) -> Option<T> {
     print!("{}", message);
     io::stdout().flush().unwrap();
     let mut input = String::new();
     io::stdin().read_line(&mut input).unwrap();
-    input.trim().to_string()
+    input.trim().parse::<T>().ok()
 }
 
-/// Main entry point
+/// Retrieves and validates a user ID.
+fn get_valid_user_id() -> Option<i32> {
+    prompt_input::<i32>("Enter your User ID: ").filter(|id| *id > 0)
+}
+
 fn main() {
     dotenv().ok();
 
@@ -44,13 +48,16 @@ fn main() {
     };
 
     loop {
-        let choice = prompt_input("\nChoose an action: register, login, update, checkpoints, or exit: ").to_lowercase();
+        let choice = prompt_input::<String>("\nChoose an action: register, login, update, fasting, analytics, or exit: ")
+            .unwrap_or_else(|| "invalid".to_string())
+            .to_lowercase();
 
         match choice.as_str() {
             "register" => handle_register(&mut conn),
             "login" => handle_login(&mut conn),
             "update" => handle_update(&mut conn),
-            "checkpoints" => handle_checkpoints(&mut conn),
+            "fasting" => handle_fasting_menu(&mut conn),
+            "analytics" => handle_analytics_menu(&mut conn),
             "exit" => {
                 println!("Goodbye!");
                 break;
@@ -60,10 +67,15 @@ fn main() {
     }
 }
 
-/// Handles user registration.
+// Simplified handler examples
 fn handle_register(conn: &mut diesel::SqliteConnection) {
-    let username = prompt_input("Enter a new username: ");
-    let password = prompt_input("Enter a new password: ");
+    let username = prompt_input::<String>("Enter a new username: ").unwrap_or_default();
+    let password = prompt_input::<String>("Enter a new password: ").unwrap_or_default();
+
+    if username.is_empty() || password.is_empty() {
+        println!("Username and password cannot be empty.");
+        return;
+    }
 
     match register_user(conn, &username, &password) {
         Ok(_) => println!("User registered successfully."),
@@ -71,76 +83,42 @@ fn handle_register(conn: &mut diesel::SqliteConnection) {
     }
 }
 
-/// Handles user login.
 fn handle_login(conn: &mut diesel::SqliteConnection) {
-    let username = prompt_input("Enter your username: ");
-    let password = prompt_input("Enter your password: ");
+    let username = prompt_input::<String>("Enter your username: ").unwrap_or_default();
+    let password = prompt_input::<String>("Enter your password: ").unwrap_or_default();
+
+    if username.is_empty() || password.is_empty() {
+        println!("Username and password cannot be empty.");
+        return;
+    }
 
     match login_user(conn, &username, &password) {
-        Ok(user) => {
-            println!("Login successful: {:?}", user);
-        }
+        Ok(user) => println!("Login successful: {:?}", user),
         Err(e) => handle_error(e),
     }
 }
-/// Handles updating user profiles.
+
 fn handle_update(conn: &mut diesel::SqliteConnection) {
-    let user_id: i32 = match prompt_input("Enter your User ID: ").parse() {
-        Ok(id) if id > 0 => id,
-        _ => {
-            println!("Invalid User ID. Please enter a positive integer.");
-            return;
-        }
-    };
-
-    // Prompt for new username, password, and device ID
-    let mut new_username = Some(prompt_input("Enter a new username (or press Enter to skip): "));
-    let mut new_password = Some(prompt_input("Enter a new password (or press Enter to skip): "));
-    let mut new_device_id = Some(prompt_input("Enter a new device ID (or press Enter to skip): "));
-
-    // Handle empty inputs by setting to `None`
-    if new_username.as_deref() == Some("") {
-        new_username = None;
-    }
-    if new_password.as_deref() == Some("") {
-        new_password = None;
-    }
-    if new_device_id.as_deref() == Some("") {
-        new_device_id = None;
-    }
-
-    // Call `update_user_profile` with all required arguments
-    match update_user_profile(
-        conn,
-        user_id,
-        new_username.as_deref(),
-        new_password.as_deref(),
-        new_device_id.as_deref(),
-    ) {
-        Ok(_) => println!("User profile updated successfully."),
-        Err(e) => handle_error(e),
-    }
-}
-
-
-/// Handles fasting checkpoints.
-fn handle_checkpoints(conn: &mut diesel::SqliteConnection) {
-    let user_id: i32 = match prompt_input("Enter your User ID: ").parse() {
-        Ok(id) => id,
-        Err(_) => {
+    let user_id = match get_valid_user_id() {
+        Some(id) => id,
+        None => {
             println!("Invalid User ID.");
             return;
         }
     };
 
-    match get_fasting_checkpoints(conn, user_id) {
-        Ok(checkpoints) => {
-            if checkpoints.is_empty() {
-                println!("No fasting checkpoints achieved.");
-            } else {
-                println!("Achieved fasting checkpoints: {:?}", checkpoints);
-            }
-        }
+    let new_username = prompt_input::<String>("Enter a new username (or press Enter to skip): ");
+    let new_password = prompt_input::<String>("Enter a new password (or press Enter to skip): ");
+    let new_device_id = prompt_input::<String>("Enter a new device ID (or press Enter to skip): ");
+
+    match update_user_profile(
+        conn,
+        user_id,
+        new_username.filter(|s| !s.is_empty()).as_deref(),
+        new_password.filter(|s| !s.is_empty()).as_deref(),
+        new_device_id.filter(|s| !s.is_empty()).as_deref(),
+    ) {
+        Ok(_) => println!("User profile updated successfully."),
         Err(e) => handle_error(e),
     }
 }
