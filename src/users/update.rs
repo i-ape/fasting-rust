@@ -19,25 +19,21 @@ pub fn update_user_profile(
         ));
     }
 
-    // Collect updates into a tuple dynamically
-    let mut update_query = diesel::update(users.filter(id.eq(user_id)));
+    // Prepare updates as a tuple
+    let updates = (
+        new_username.map(|val| username.eq(val)),
+        new_password.map(|val| {
+            let hashed_password_value = hash(val, DEFAULT_COST)
+                .map_err(FastingAppError::PasswordHashError)?;
+            Ok::<_, FastingAppError>(hashed_password.eq(hashed_password_value))
+        })
+        .transpose()?, // Handle password hashing errors
+        new_device_id.map(|val| device_id.eq(val)),
+    );
 
-    if let Some(username_value) = new_username {
-        update_query = update_query.set(username.eq(username_value));
-    }
-
-    if let Some(password_value) = new_password {
-        let hashed_password_value = hash(password_value, DEFAULT_COST)
-            .map_err(FastingAppError::PasswordHashError)?;
-        update_query = update_query.set(hashed_password.eq(hashed_password_value));
-    }
-
-    if let Some(device_id_value) = new_device_id {
-        update_query = update_query.set(device_id.eq(device_id_value));
-    }
-
-    // Execute the query
-    update_query
+    // Execute the query with the tuple
+    diesel::update(users.filter(id.eq(user_id)))
+        .set(updates)
         .execute(conn)
         .map_err(FastingAppError::DatabaseError)
 }
