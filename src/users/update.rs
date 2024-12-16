@@ -1,5 +1,5 @@
 use crate::errors::FastingAppError;
-use crate::schema::users::dsl::{device_id, hashed_password, id, username, users};
+use crate::schema::users::dsl::{device_id, hashed_password, username, id, users};
 use bcrypt::{hash, DEFAULT_COST};
 use diesel::prelude::*;
 use diesel::sqlite::SqliteConnection;
@@ -19,25 +19,25 @@ pub fn update_user_profile(
         ));
     }
 
-    // Dynamically build the update tuple
-    let mut query = diesel::update(users.filter(id.eq(user_id)));
+    // Collect updates into a tuple dynamically
+    let mut update_query = diesel::update(users.filter(id.eq(user_id)));
 
     if let Some(username_value) = new_username {
-        query = query.set(username.eq(username_value));
+        update_query = update_query.set(username.eq(username_value));
     }
 
     if let Some(password_value) = new_password {
         let hashed_password_value = hash(password_value, DEFAULT_COST)
             .map_err(FastingAppError::PasswordHashError)?;
-        query = query.set(hashed_password.eq(hashed_password_value));
+        update_query = update_query.set(hashed_password.eq(hashed_password_value));
     }
 
     if let Some(device_id_value) = new_device_id {
-        query = query.set(device_id.eq(device_id_value));
+        update_query = update_query.set(device_id.eq(device_id_value));
     }
 
     // Execute the query
-    query
+    update_query
         .execute(conn)
         .map_err(FastingAppError::DatabaseError)
 }
