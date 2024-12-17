@@ -12,7 +12,7 @@ use crate::handlers::analytics::{
     calculate_average_fasting_duration, calculate_current_streak, calculate_total_fasting_time,
     calculate_weekly_fasting_summary, get_fasting_checkpoints, get_fasting_history,
 };
-use crate::handlers::fasting::{start_fasting, stop_fasting};
+use crate::handlers::fasting::{manage_fasting_session, get_current_fasting_status};
 use crate::users::{register_user, login_user, update_user_profile};
 
 mod db;
@@ -48,9 +48,11 @@ fn main() {
     };
 
     loop {
-        let choice = prompt_input::<String>("\nChoose an action: register, login, update, fasting, analytics, or exit: ")
-            .unwrap_or_else(|| "invalid".to_string())
-            .to_lowercase();
+        let choice = prompt_input::<String>(
+            "\nChoose an action: register, login, update, fasting, analytics, or exit: ",
+        )
+        .unwrap_or_else(|| "invalid".to_string())
+        .to_lowercase();
 
         match choice.as_str() {
             "register" => handle_register(&mut conn),
@@ -67,7 +69,7 @@ fn main() {
     }
 }
 
-// Simplified handler examples
+/// Handles user registration.
 fn handle_register(conn: &mut diesel::SqliteConnection) {
     let username = prompt_input::<String>("Enter a new username: ").unwrap_or_default();
     let password = prompt_input::<String>("Enter a new password: ").unwrap_or_default();
@@ -83,6 +85,7 @@ fn handle_register(conn: &mut diesel::SqliteConnection) {
     }
 }
 
+/// Handles user login.
 fn handle_login(conn: &mut diesel::SqliteConnection) {
     let username = prompt_input::<String>("Enter your username: ").unwrap_or_default();
     let password = prompt_input::<String>("Enter your password: ").unwrap_or_default();
@@ -93,11 +96,15 @@ fn handle_login(conn: &mut diesel::SqliteConnection) {
     }
 
     match login_user(conn, &username, &password) {
-        Ok(user) => println!("Login successful: {:?}", user),
+        Ok(user) => {
+            println!("Login successful for user ID: {:?}", user.id);
+            handle_fasting_menu(conn);
+        }
         Err(e) => handle_error(e),
     }
 }
 
+/// Handles updating user profiles.
 fn handle_update(conn: &mut diesel::SqliteConnection) {
     let user_id = match get_valid_user_id() {
         Some(id) => id,
@@ -120,5 +127,98 @@ fn handle_update(conn: &mut diesel::SqliteConnection) {
     ) {
         Ok(_) => println!("User profile updated successfully."),
         Err(e) => handle_error(e),
+    }
+}
+
+/// Handles the fasting-related actions.
+fn handle_fasting_menu(conn: &mut diesel::SqliteConnection) {
+    let user_id = match get_valid_user_id() {
+        Some(id) => id,
+        None => {
+            println!("Invalid User ID.");
+            return;
+        }
+    };
+
+    loop {
+        println!("\nFasting Menu: start, stop, status, back");
+        let choice = prompt_input::<String>("Choose an action: ")
+            .unwrap_or_default()
+            .to_lowercase();
+
+        match choice.as_str() {
+            "start" | "stop" => manage_fasting_session(conn, user_id),
+            "status" => match get_current_fasting_status(conn, user_id) {
+                Ok(Some((start, duration))) => {
+                    println!(
+                        "Current fasting started at: {}, duration: {} minutes.",
+                        start, duration
+                    );
+                }
+                Ok(None) => println!("No active fasting session."),
+                Err(e) => handle_error(e),
+            },
+            "back" => break,
+            _ => println!("Invalid choice. Please try again."),
+        }
+    }
+}
+
+/// Handles analytics-related actions.
+fn handle_analytics_menu(conn: &mut diesel::SqliteConnection) {
+    let user_id = match get_valid_user_id() {
+        Some(id) => id,
+        None => {
+            println!("Invalid User ID.");
+            return;
+        }
+    };
+
+    loop {
+        println!("\nAnalytics Menu: history, average, streak, total, checkpoints, summary, back");
+        let choice = prompt_input::<String>("Choose an action: ")
+            .unwrap_or_default()
+            .to_lowercase();
+
+        match choice.as_str() {
+            "history" => match get_fasting_history(conn, user_id) {
+                Ok(events) => println!("Fasting History: {:?}", events),
+                Err(e) => handle_error(e),
+            },
+            "average" => match calculate_average_fasting_duration(conn, user_id) {
+                Ok(Some(avg)) => println!("Average Fasting Duration: {} minutes", avg),
+                Ok(None) => println!("No fasting events found."),
+                Err(e) => handle_error(e),
+            },
+            "streak" => match calculate_current_streak(conn, user_id) {
+                Ok(streak) => println!("Current Streak: {} days", streak),
+                Err(e) => handle_error(e),
+            },
+            "total" => match calculate_total_fasting_time(conn, user_id) {
+                Ok(total) => println!("Total Fasting Time: {} minutes", total),
+                Err(e) => handle_error(e),
+            },
+            "checkpoints" => match get_fasting_checkpoints(conn, user_id) {
+                Ok(checkpoints) => println!("Achieved Checkpoints: {:?}", checkpoints),
+                Err(e) => handle_error(e),
+            },
+            "summary" => {
+                let start_date = prompt_input::<String>("Enter start date (YYYY-MM-DD HH:MM): ")
+                    .and_then(|d| NaiveDateTime::parse_from_str(&d, "%Y-%m-%d %H:%M").ok());
+                let end_date = prompt_input::<String>("Enter end date (YYYY-MM-DD HH:MM): ")
+                    .and_then(|d| NaiveDateTime::parse_from_str(&d, "%Y-%m-%d %H:%M").ok());
+
+                if let (Some(start), Some(end)) = (start_date, end_date) {
+                    match calculate_weekly_fasting_summary(conn, user_id, start, end) {
+                        Ok(total) => println!("Total Fasting Duration: {} minutes", total),
+                        Err(e) => handle_error(e),
+                    }
+                } else {
+                    println!("Invalid date format.");
+                }
+            }
+            "back" => break,
+            _ => println!("Invalid choice. Please try again."),
+        }
     }
 }
