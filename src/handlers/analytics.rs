@@ -7,7 +7,7 @@ use diesel::SqliteConnection;
 
 const CHECKPOINTS: [i64; 9] = [4, 12, 14, 16, 18, 24, 36, 48, 72]; // Checkpoints in hours
 
-/// Checks which fasting checkpoints a user has achieved
+/// Retrieves achieved fasting checkpoints for a specific user.
 pub fn get_fasting_checkpoints(
     conn: &mut SqliteConnection,
     user_id: i32,
@@ -26,6 +26,7 @@ pub fn get_fasting_checkpoints(
                 .signed_duration_since(event.start_time)
                 .num_hours();
 
+            // Add checkpoints the user achieved
             for &checkpoint in CHECKPOINTS.iter() {
                 if duration_hours >= checkpoint && !achieved_checkpoints.contains(&checkpoint) {
                     achieved_checkpoints.push(checkpoint);
@@ -34,13 +35,11 @@ pub fn get_fasting_checkpoints(
         }
     }
 
-    achieved_checkpoints.sort_unstable(); // Ensure checkpoints are sorted
+    achieved_checkpoints.sort_unstable();
     Ok(achieved_checkpoints)
 }
 
-
-
-/// Retrieves the complete fasting history for a specific user
+/// Retrieves fasting history for a specific user.
 pub fn get_fasting_history(
     conn: &mut SqliteConnection,
     user_id: i32,
@@ -52,7 +51,7 @@ pub fn get_fasting_history(
         .map_err(FastingAppError::DatabaseError)
 }
 
-/// Calculates the average fasting duration for a specific user
+/// Calculates the average fasting duration in minutes for a specific user.
 pub fn calculate_average_fasting_duration(
     conn: &mut SqliteConnection,
     user_id: i32,
@@ -60,7 +59,7 @@ pub fn calculate_average_fasting_duration(
     let events: Vec<FastingEvent> = fasting_events
         .filter(schema_user_id.eq(user_id))
         .filter(stop_time.is_not_null())
-        .load(conn)
+        .load::<FastingEvent>(conn)
         .map_err(FastingAppError::DatabaseError)?;
 
     if events.is_empty() {
@@ -78,11 +77,10 @@ pub fn calculate_average_fasting_duration(
         })
         .sum();
 
-    let average_duration = total_duration / events.len() as i64;
-    Ok(Some(average_duration))
+    Ok(Some(total_duration / events.len() as i64))
 }
 
-/// Generates a weekly summary of fasting hours for a specific user within a date range
+/// Summarizes total fasting time within a specific date range.
 pub fn calculate_weekly_fasting_summary(
     conn: &mut SqliteConnection,
     user_id: i32,
@@ -93,7 +91,7 @@ pub fn calculate_weekly_fasting_summary(
         .filter(schema_user_id.eq(user_id))
         .filter(start_time.ge(start_date))
         .filter(stop_time.le(Some(end_date)))
-        .load(conn)
+        .load::<FastingEvent>(conn)
         .map_err(FastingAppError::DatabaseError)?;
 
     let total_duration: i64 = events
@@ -110,7 +108,7 @@ pub fn calculate_weekly_fasting_summary(
     Ok(total_duration)
 }
 
-/// Calculates the current fasting streak for a specific user
+/// Calculates the current fasting streak in days for a specific user.
 pub fn calculate_current_streak(
     conn: &mut SqliteConnection,
     user_id: i32,
@@ -118,7 +116,7 @@ pub fn calculate_current_streak(
     let events: Vec<FastingEvent> = fasting_events
         .filter(schema_user_id.eq(user_id))
         .order(start_time.desc())
-        .load(conn)
+        .load::<FastingEvent>(conn)
         .map_err(FastingAppError::DatabaseError)?;
 
     let mut streak = 0;
@@ -127,6 +125,7 @@ pub fn calculate_current_streak(
     for event in events {
         let event_date = event.start_time.date();
 
+        // Check consecutive fasting days
         if event_date == current_date || Some(event_date) == current_date.pred_opt() {
             streak += 1;
             current_date = event_date;
@@ -138,7 +137,7 @@ pub fn calculate_current_streak(
     Ok(streak)
 }
 
-/// Calculates the total fasting time for a specific user
+/// Calculates the total fasting time in minutes for a specific user.
 pub fn calculate_total_fasting_time(
     conn: &mut SqliteConnection,
     user_id: i32,
@@ -146,7 +145,7 @@ pub fn calculate_total_fasting_time(
     let events: Vec<FastingEvent> = fasting_events
         .filter(schema_user_id.eq(user_id))
         .filter(stop_time.is_not_null())
-        .load(conn)
+        .load::<FastingEvent>(conn)
         .map_err(FastingAppError::DatabaseError)?;
 
     let total_duration: i64 = events
