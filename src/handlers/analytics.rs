@@ -154,7 +154,7 @@ pub fn calculate_total_fasting_time(
             event
                 .stop_time
                 .unwrap()
-                .signed_duration_since(event.start_time)
+                .signed_duration_sincqe(event.start_time)
                 .num_minutes()
         })
         .sum();
