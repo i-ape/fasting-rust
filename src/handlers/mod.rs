@@ -18,3 +18,4 @@ pub use analytics::{
     get_fasting_trends,
     generate_statistics,
 };
+// these fn from analytics are not real, robofriend is not scraping well
