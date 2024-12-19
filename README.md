@@ -15,7 +15,6 @@ cheats.rs rust info mainly for importing crates and other documentation
 
 currently i have the issues with variables and having consistant info in them between all the files, next i must debug and proceed,
 
-
 ├── analytics.rs
 ├── auth.rs
 ├── db.rs
@@ -40,10 +39,12 @@ currently i have the issues with variables and having consistant info in them be
 └── utils.rs
 
 this is my current structure
-have issues with fn in users either not being used or a weird blocks where code seems to go into black holes and in terminal its says 1 issue, next I want to add user goals and history sections although it may be too early 
+have issues with fn in users either not being used or a weird blocks where code seems to go into black holes and in terminal its says 1 issue, next I want to add user goals and history sections although it may be too early
 
 did some reading I should do integration tests and do a
 cargo install cargo-expand
 cargo expand
-https://bheisler.github.io/criterion.rs/book/index.html supposedly a good src
+^ now installed
+im told go would work well with this project, will try on a branch
+<https://bheisler.github.io/criterion.rs/book/index.html> supposedly a good src
 must find a way to do merges and pull requests from mobile
