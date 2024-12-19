@@ -1,21 +1,12 @@
-// src/handlers/mod.rs
-
-pub mod fasting;
 pub mod analytics;
+pub mod fasting;
+
+// Re-export functions for easy access from `handlers` module
+pub use analytics::{
+    calculate_average_fasting_duration, calculate_current_streak, calculate_total_fasting_time,
+    calculate_weekly_fasting_summary, get_fasting_checkpoints, get_fasting_history,
+};
 
 pub use fasting::{
-    get_fasting_checkpoints,
-    get_fasting_history,
-    calculate_average_fasting_duration,
-    calculate_weekly_fasting_summary,
-    calculate_current_streak,
-    calculate_total_fasting_time,
+    start_fasting, stop_fasting, get_current_fasting_status,
 };
-
-pub use analytics::{
-    calculate_user_performance,
-    generate_fasting_report,
-    get_fasting_trends,
-    generate_statistics,
-};
-// these fn from analytics are not real, robofriend is not scraping well
