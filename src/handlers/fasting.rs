@@ -72,3 +72,14 @@ fn find_active_fasting_event(
         .optional()
         .map_err(FastingAppError::DatabaseError)
 }
+pub fn manage_fasting_session(conn: &mut diesel::SqliteConnection, user_id: i32) {
+    match start_fasting(conn, user_id, chrono::Utc::now().naive_utc()) {
+        Ok(_) => println!("Fasting session started."),
+        Err(e) => handle_error(e),
+    }
+
+    match stop_fasting(conn, user_id, chrono::Utc::now().naive_utc()) {
+        Ok(_) => println!("Fasting session stopped."),
+        Err(e) => handle_error(e),
+    }
+}
