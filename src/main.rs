@@ -4,6 +4,7 @@ extern crate dotenv;
 
 use std::io::{self, Write};
 
+use chrono::NaiveDateTime;
 use dotenv::dotenv;
 
 use crate::db::establish_connection;
@@ -36,6 +37,7 @@ fn get_valid_user_id() -> Option<i32> {
     prompt_input::<i32>("Enter your User ID: ").filter(|id| *id > 0)
 }
 
+/// Main function that provides the primary menu to the user.
 fn main() {
     dotenv().ok();
 
@@ -203,18 +205,33 @@ fn handle_analytics_menu(conn: &mut diesel::SqliteConnection) {
                 Err(e) => handle_error(e),
             },
             "summary" => {
-                let start_date = prompt_input::<String>("Enter start date (YYYY-MM-DD HH:MM): ")
-                    .and_then(|d| NaiveDateTime::parse_from_str(&d, "%Y-%m-%d %H:%M").ok());
-                let end_date = prompt_input::<String>("Enter end date (YYYY-MM-DD HH:MM): ")
-                    .and_then(|d| NaiveDateTime::parse_from_str(&d, "%Y-%m-%d %H:%M").ok());
-
-                if let (Some(start), Some(end)) = (start_date, end_date) {
-                    match calculate_weekly_fasting_summary(conn, user_id, start, end) {
-                        Ok(total) => println!("Total Fasting Duration: {} minutes", total),
-                        Err(e) => handle_error(e),
+                let start_date = loop {
+                    let input = prompt_input::<String>("Enter start date (YYYY-MM-DD HH:MM): ");
+                    if let Some(d) = input
+                        .as_deref()
+                        .and_then(|d| NaiveDateTime::parse_from_str(d, "%Y-%m-%d %H:%M").ok())
+                    {
+                        break d;
+                    } else {
+                        println!("Invalid date format. Please try again.");
                     }
-                } else {
-                    println!("Invalid date format.");
+                };
+
+                let end_date = loop {
+                    let input = prompt_input::<String>("Enter end date (YYYY-MM-DD HH:MM): ");
+                    if let Some(d) = input
+                        .as_deref()
+                        .and_then(|d| NaiveDateTime::parse_from_str(d, "%Y-%m-%d %H:%M").ok())
+                    {
+                        break d;
+                    } else {
+                        println!("Invalid date format. Please try again.");
+                    }
+                };
+
+                match calculate_weekly_fasting_summary(conn, user_id, start_date, end_date) {
+                    Ok(total) => println!("Total Fasting Duration: {} minutes", total),
+                    Err(e) => handle_error(e),
                 }
             }
             "back" => break,
