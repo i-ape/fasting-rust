@@ -137,7 +137,95 @@ fn handle_fasting_menu(conn: &mut diesel::SqliteConnection) {
     let user_id = match get_valid_user_id() {
         Some(id) => id,
         None => {
-            println!("Invalid User ID.");
+            println!("Invalid User ID.");fn handle_analytics_menu(conn: &mut diesel::SqliteConnection) {
+                let user_id = match get_valid_user_id() {
+                    Some(id) => id,
+                    None => {
+                        println!("Invalid User ID.");
+                        return;
+                    }
+                };
+            
+                loop {
+                    println!("\nAnalytics Menu: history, average, streak, total, checkpoints, summary, back");
+                    let choice = prompt_input::<String>("Choose an action: ")
+                        .unwrap_or_default()
+                        .to_lowercase();
+            
+                    match choice.as_str() {
+                        "history" => match get_fasting_history(conn, user_id) {
+                            Ok(events) => {
+                                if events.is_empty() {
+                                    println!("No fasting history found.");
+                                } else {
+                                    for event in events {
+                                        println!(
+                                            "Start: {}, Stop: {}",
+                                            event.start_time,
+                                            event.stop_time
+                                                .map(|s| s.to_string())
+                                                .unwrap_or_else(|| "Ongoing".to_string())
+                                        );
+                                    }
+                                }
+                            }
+                            Err(e) => handle_error(e),
+                        },
+                        "average" => match calculate_average_fasting_duration(conn, user_id) {
+                            Ok(Some(avg)) => println!("Average Fasting Duration: {} minutes", avg),
+                            Ok(None) => println!("No fasting events found."),
+                            Err(e) => handle_error(e),
+                        },
+                        "streak" => match calculate_current_streak(conn, user_id) {
+                            Ok(streak) => println!("Current Streak: {} days", streak),
+                            Err(e) => handle_error(e),
+                        },
+                        "total" => match calculate_total_fasting_time(conn, user_id) {
+                            Ok(total) => println!("Total Fasting Time: {} minutes", total),
+                            Err(e) => handle_error(e),
+                        },
+                        "checkpoints" => match get_fasting_checkpoints(conn, user_id) {
+                            Ok(checkpoints) => {
+                                if checkpoints.is_empty() {
+                                    println!("No checkpoints achieved.");
+                                } else {
+                                    println!("Achieved Checkpoints: {:?}", checkpoints);
+                                }
+                            }
+                            Err(e) => handle_error(e),
+                        },
+                        "summary" => {
+                            let start_date = loop {
+                                if let Some(date) = prompt_input::<String>("Enter start date (YYYY-MM-DD HH:MM): ")
+                                    .and_then(|d| NaiveDateTime::parse_from_str(&d, "%Y-%m-%d %H:%M").ok())
+                                {
+                                    break date;
+                                } else {
+                                    println!("Invalid date format. Please try again.");
+                                }
+                            };
+            
+                            let end_date = loop {
+                                if let Some(date) = prompt_input::<String>("Enter end date (YYYY-MM-DD HH:MM): ")
+                                    .and_then(|d| NaiveDateTime::parse_from_str(&d, "%Y-%m-%d %H:%M").ok())
+                                {
+                                    break date;
+                                } else {
+                                    println!("Invalid date format. Please try again.");
+                                }
+                            };
+            
+                            match calculate_weekly_fasting_summary(conn, user_id, start_date, end_date) {
+                                Ok(total) => println!("Total Fasting Duration: {} minutes", total),
+                                Err(e) => handle_error(e),
+                            }
+                        }
+                        "back" => break,
+                        _ => println!("Invalid choice. Please try again."),
+                    }
+                }
+            }
+            
             return;
         }
     };
