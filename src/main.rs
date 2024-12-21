@@ -13,7 +13,7 @@ use crate::handlers::analytics::{
     calculate_average_fasting_duration, calculate_current_streak, calculate_total_fasting_time,
     calculate_weekly_fasting_summary, get_fasting_checkpoints, get_fasting_history,
 };
-use crate::handlers::fasting::{manage_fasting_session, get_current_fasting_status};
+use crate::handlers::fasting::{start_fasting, stop_fasting, get_current_fasting_status};
 use crate::users::{register_user, login_user, update_user_profile};
 
 mod db;
@@ -37,7 +37,7 @@ fn get_valid_user_id() -> Option<i32> {
     prompt_input::<i32>("Enter your User ID: ").filter(|id| *id > 0)
 }
 
-/// Main function that provides the primary menu to the user.
+/// Main function providing the primary menu to the user.
 fn main() {
     dotenv().ok();
 
@@ -149,7 +149,14 @@ fn handle_fasting_menu(conn: &mut diesel::SqliteConnection) {
             .to_lowercase();
 
         match choice.as_str() {
-            "start" | "stop" => manage_fasting_session(conn, user_id),
+            "start" => match start_fasting(conn, user_id, chrono::Utc::now().naive_utc()) {
+                Ok(_) => println!("Fasting session started."),
+                Err(e) => handle_error(e),
+            },
+            "stop" => match stop_fasting(conn, user_id, chrono::Utc::now().naive_utc()) {
+                Ok(_) => println!("Fasting session stopped."),
+                Err(e) => handle_error(e),
+            },
             "status" => match get_current_fasting_status(conn, user_id) {
                 Ok(Some((start, duration))) => {
                     println!(
@@ -205,33 +212,18 @@ fn handle_analytics_menu(conn: &mut diesel::SqliteConnection) {
                 Err(e) => handle_error(e),
             },
             "summary" => {
-                let start_date = loop {
-                    let input = prompt_input::<String>("Enter start date (YYYY-MM-DD HH:MM): ");
-                    if let Some(d) = input
-                        .as_deref()
-                        .and_then(|d| NaiveDateTime::parse_from_str(d, "%Y-%m-%d %H:%M").ok())
-                    {
-                        break d;
-                    } else {
-                        println!("Invalid date format. Please try again.");
-                    }
-                };
+                let start_date = prompt_input::<String>("Enter start date (YYYY-MM-DD HH:MM): ")
+                    .and_then(|d| NaiveDateTime::parse_from_str(&d, "%Y-%m-%d %H:%M").ok());
+                let end_date = prompt_input::<String>("Enter end date (YYYY-MM-DD HH:MM): ")
+                    .and_then(|d| NaiveDateTime::parse_from_str(&d, "%Y-%m-%d %H:%M").ok());
 
-                let end_date = loop {
-                    let input = prompt_input::<String>("Enter end date (YYYY-MM-DD HH:MM): ");
-                    if let Some(d) = input
-                        .as_deref()
-                        .and_then(|d| NaiveDateTime::parse_from_str(d, "%Y-%m-%d %H:%M").ok())
-                    {
-                        break d;
-                    } else {
-                        println!("Invalid date format. Please try again.");
+                if let (Some(start), Some(end)) = (start_date, end_date) {
+                    match calculate_weekly_fasting_summary(conn, user_id, start, end) {
+                        Ok(total) => println!("Total Fasting Duration: {} minutes", total),
+                        Err(e) => handle_error(e),
                     }
-                };
-
-                match calculate_weekly_fasting_summary(conn, user_id, start_date, end_date) {
-                    Ok(total) => println!("Total Fasting Duration: {} minutes", total),
-                    Err(e) => handle_error(e),
+                } else {
+                    println!("Invalid date format.");
                 }
             }
             "back" => break,
