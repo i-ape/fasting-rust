@@ -3,7 +3,6 @@ extern crate diesel;
 extern crate dotenv;
 
 use std::io::{self, Write};
-
 use chrono::NaiveDateTime;
 use dotenv::dotenv;
 
@@ -13,7 +12,7 @@ use crate::handlers::analytics::{
     calculate_average_fasting_duration, calculate_current_streak, calculate_total_fasting_time,
     calculate_weekly_fasting_summary, get_fasting_checkpoints, get_fasting_history,
 };
-use crate::handlers::fasting::{start_fasting, stop_fasting, get_current_fasting_status};
+use crate::handlers::fasting::{manage_fasting_session, get_current_fasting_status};
 use crate::users::{register_user, login_user, update_user_profile};
 
 mod db;
@@ -37,7 +36,22 @@ fn get_valid_user_id() -> Option<i32> {
     prompt_input::<i32>("Enter your User ID: ").filter(|id| *id > 0)
 }
 
-/// Main function providing the primary menu to the user.
+/// Prompts the user for a valid `NaiveDateTime` input.
+fn get_valid_datetime(message: &str) -> NaiveDateTime {
+    loop {
+        let input = prompt_input::<String>(message);
+        if let Some(datetime) = input
+            .as_deref()
+            .and_then(|d| NaiveDateTime::parse_from_str(d, "%Y-%m-%d %H:%M").ok())
+        {
+            return datetime;
+        } else {
+            println!("Invalid date format. Please try again.");
+        }
+    }
+}
+
+/// Main function that provides the primary menu to the user.
 fn main() {
     dotenv().ok();
 
@@ -137,95 +151,7 @@ fn handle_fasting_menu(conn: &mut diesel::SqliteConnection) {
     let user_id = match get_valid_user_id() {
         Some(id) => id,
         None => {
-            println!("Invalid User ID.");fn handle_analytics_menu(conn: &mut diesel::SqliteConnection) {
-                let user_id = match get_valid_user_id() {
-                    Some(id) => id,
-                    None => {
-                        println!("Invalid User ID.");
-                        return;
-                    }
-                };
-            
-                loop {
-                    println!("\nAnalytics Menu: history, average, streak, total, checkpoints, summary, back");
-                    let choice = prompt_input::<String>("Choose an action: ")
-                        .unwrap_or_default()
-                        .to_lowercase();
-            
-                    match choice.as_str() {
-                        "history" => match get_fasting_history(conn, user_id) {
-                            Ok(events) => {
-                                if events.is_empty() {
-                                    println!("No fasting history found.");
-                                } else {
-                                    for event in events {
-                                        println!(
-                                            "Start: {}, Stop: {}",
-                                            event.start_time,
-                                            event.stop_time
-                                                .map(|s| s.to_string())
-                                                .unwrap_or_else(|| "Ongoing".to_string())
-                                        );
-                                    }
-                                }
-                            }
-                            Err(e) => handle_error(e),
-                        },
-                        "average" => match calculate_average_fasting_duration(conn, user_id) {
-                            Ok(Some(avg)) => println!("Average Fasting Duration: {} minutes", avg),
-                            Ok(None) => println!("No fasting events found."),
-                            Err(e) => handle_error(e),
-                        },
-                        "streak" => match calculate_current_streak(conn, user_id) {
-                            Ok(streak) => println!("Current Streak: {} days", streak),
-                            Err(e) => handle_error(e),
-                        },
-                        "total" => match calculate_total_fasting_time(conn, user_id) {
-                            Ok(total) => println!("Total Fasting Time: {} minutes", total),
-                            Err(e) => handle_error(e),
-                        },
-                        "checkpoints" => match get_fasting_checkpoints(conn, user_id) {
-                            Ok(checkpoints) => {
-                                if checkpoints.is_empty() {
-                                    println!("No checkpoints achieved.");
-                                } else {
-                                    println!("Achieved Checkpoints: {:?}", checkpoints);
-                                }
-                            }
-                            Err(e) => handle_error(e),
-                        },
-                        "summary" => {
-                            let start_date = loop {
-                                if let Some(date) = prompt_input::<String>("Enter start date (YYYY-MM-DD HH:MM): ")
-                                    .and_then(|d| NaiveDateTime::parse_from_str(&d, "%Y-%m-%d %H:%M").ok())
-                                {
-                                    break date;
-                                } else {
-                                    println!("Invalid date format. Please try again.");
-                                }
-                            };
-            
-                            let end_date = loop {
-                                if let Some(date) = prompt_input::<String>("Enter end date (YYYY-MM-DD HH:MM): ")
-                                    .and_then(|d| NaiveDateTime::parse_from_str(&d, "%Y-%m-%d %H:%M").ok())
-                                {
-                                    break date;
-                                } else {
-                                    println!("Invalid date format. Please try again.");
-                                }
-                            };
-            
-                            match calculate_weekly_fasting_summary(conn, user_id, start_date, end_date) {
-                                Ok(total) => println!("Total Fasting Duration: {} minutes", total),
-                                Err(e) => handle_error(e),
-                            }
-                        }
-                        "back" => break,
-                        _ => println!("Invalid choice. Please try again."),
-                    }
-                }
-            }
-            
+            println!("Invalid User ID.");
             return;
         }
     };
@@ -237,14 +163,7 @@ fn handle_fasting_menu(conn: &mut diesel::SqliteConnection) {
             .to_lowercase();
 
         match choice.as_str() {
-            "start" => match start_fasting(conn, user_id, chrono::Utc::now().naive_utc()) {
-                Ok(_) => println!("Fasting session started."),
-                Err(e) => handle_error(e),
-            },
-            "stop" => match stop_fasting(conn, user_id, chrono::Utc::now().naive_utc()) {
-                Ok(_) => println!("Fasting session stopped."),
-                Err(e) => handle_error(e),
-            },
+            "start" | "stop" => manage_fasting_session(conn, user_id),
             "status" => match get_current_fasting_status(conn, user_id) {
                 Ok(Some((start, duration))) => {
                     println!(
@@ -279,7 +198,21 @@ fn handle_analytics_menu(conn: &mut diesel::SqliteConnection) {
 
         match choice.as_str() {
             "history" => match get_fasting_history(conn, user_id) {
-                Ok(events) => println!("Fasting History: {:?}", events),
+                Ok(events) => {
+                    if events.is_empty() {
+                        println!("No fasting history found.");
+                    } else {
+                        for event in events {
+                            println!(
+                                "Start: {}, Stop: {}",
+                                event.start_time,
+                                event.stop_time
+                                    .map(|s| s.to_string())
+                                    .unwrap_or_else(|| "Ongoing".to_string())
+                            );
+                        }
+                    }
+                }
                 Err(e) => handle_error(e),
             },
             "average" => match calculate_average_fasting_duration(conn, user_id) {
@@ -296,22 +229,22 @@ fn handle_analytics_menu(conn: &mut diesel::SqliteConnection) {
                 Err(e) => handle_error(e),
             },
             "checkpoints" => match get_fasting_checkpoints(conn, user_id) {
-                Ok(checkpoints) => println!("Achieved Checkpoints: {:?}", checkpoints),
+                Ok(checkpoints) => {
+                    if checkpoints.is_empty() {
+                        println!("No checkpoints achieved.");
+                    } else {
+                        println!("Achieved Checkpoints: {:?}", checkpoints);
+                    }
+                }
                 Err(e) => handle_error(e),
             },
             "summary" => {
-                let start_date = prompt_input::<String>("Enter start date (YYYY-MM-DD HH:MM): ")
-                    .and_then(|d| NaiveDateTime::parse_from_str(&d, "%Y-%m-%d %H:%M").ok());
-                let end_date = prompt_input::<String>("Enter end date (YYYY-MM-DD HH:MM): ")
-                    .and_then(|d| NaiveDateTime::parse_from_str(&d, "%Y-%m-%d %H:%M").ok());
+                let start_date = get_valid_datetime("Enter start date (YYYY-MM-DD HH:MM): ");
+                let end_date = get_valid_datetime("Enter end date (YYYY-MM-DD HH:MM): ");
 
-                if let (Some(start), Some(end)) = (start_date, end_date) {
-                    match calculate_weekly_fasting_summary(conn, user_id, start, end) {
-                        Ok(total) => println!("Total Fasting Duration: {} minutes", total),
-                        Err(e) => handle_error(e),
-                    }
-                } else {
-                    println!("Invalid date format.");
+                match calculate_weekly_fasting_summary(conn, user_id, start_date, end_date) {
+                    Ok(total) => println!("Total Fasting Duration: {} minutes", total),
+                    Err(e) => handle_error(e),
                 }
             }
             "back" => break,
