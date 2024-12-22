@@ -1,5 +1,6 @@
 pub mod analytics;
 pub mod fasting;
+pub mod menu;
 
 // Re-export functions for easy access from `handlers` module
 pub use analytics::{
@@ -7,6 +8,4 @@ pub use analytics::{
     calculate_weekly_fasting_summary, get_fasting_checkpoints, get_fasting_history,
 };
 
-pub use fasting::{
-    start_fasting, stop_fasting, get_current_fasting_status,
-};
+pub use fasting::{get_current_fasting_status, start_fasting, stop_fasting};

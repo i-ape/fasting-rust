@@ -8,12 +8,10 @@ use dotenv::dotenv;
 
 use crate::db::establish_connection;
 use crate::errors::handle_error;
-use crate::handlers::analytics::{
-    calculate_average_fasting_duration, calculate_current_streak, calculate_total_fasting_time,
-    calculate_weekly_fasting_summary, get_fasting_checkpoints, get_fasting_history,
+use crate::handlers::menu::{
+    handle_register, handle_login, handle_update, handle_fasting_menu, handle_analytics_menu,
 };
-use crate::handlers::fasting::{manage_fasting_session, get_current_fasting_status};
-use crate::users::{register_user, login_user, update_user_profile};
+use log;
 
 mod db;
 mod errors;
@@ -22,233 +20,60 @@ mod models;
 mod schema;
 mod users;
 
-/// Generic function to prompt input.
-fn prompt_input<T: std::str::FromStr>(message: &str) -> Option<T> {
-    print!("{}", message);
-    io::stdout().flush().unwrap();
-    let mut input = String::new();
-    io::stdin().read_line(&mut input).unwrap();
-    input.trim().parse::<T>().ok()
-}
-
-/// Retrieves and validates a user ID.
-fn get_valid_user_id() -> Option<i32> {
-    prompt_input::<i32>("Enter your User ID: ").filter(|id| *id > 0)
-}
-
-/// Prompts the user for a valid `NaiveDateTime` input.
-fn get_valid_datetime(message: &str) -> NaiveDateTime {
-    loop {
-        let input = prompt_input::<String>(message);
-        if let Some(datetime) = input
-            .as_deref()
-            .and_then(|d| NaiveDateTime::parse_from_str(d, "%Y-%m-%d %H:%M").ok())
-        {
-            return datetime;
-        } else {
-            println!("Invalid date format. Please try again.");
-        }
-    }
-}
-
-/// Main function that provides the primary menu to the user.
 fn main() {
     dotenv().ok();
+    env_logger::init();
 
     let mut conn = match establish_connection() {
         Ok(connection) => connection,
         Err(e) => {
+            log::error!("Failed to establish connection: {:?}", e);
             handle_error(e);
             return;
         }
     };
 
+    // Main menu loop
     loop {
-        let choice = prompt_input::<String>(
-            "\nChoose an action: register, login, update, fasting, analytics, or exit: ",
-        )
-        .unwrap_or_else(|| "invalid".to_string())
-        .to_lowercase();
-
-        match choice.as_str() {
-            "register" => handle_register(&mut conn),
-            "login" => handle_login(&mut conn),
-            "update" => handle_update(&mut conn),
-            "fasting" => handle_fasting_menu(&mut conn),
-            "analytics" => handle_analytics_menu(&mut conn),
-            "exit" => {
+        match select_menu_option() {
+            MenuOption::Register => handle_register(&mut conn),
+            MenuOption::Login => handle_login(&mut conn),
+            MenuOption::Update => handle_update(&mut conn),
+            MenuOption::Fasting => handle_fasting_menu(&mut conn),
+            MenuOption::Analytics => handle_analytics_menu(&mut conn),
+            MenuOption::Exit => {
                 println!("Goodbye!");
                 break;
             }
-            _ => println!("Invalid action. Please try again."),
+            MenuOption::Invalid => println!("Invalid action. Please try again."),
         }
     }
 }
 
-/// Handles user registration.
-fn handle_register(conn: &mut diesel::SqliteConnection) {
-    let username = prompt_input::<String>("Enter a new username: ").unwrap_or_default();
-    let password = prompt_input::<String>("Enter a new password: ").unwrap_or_default();
-
-    if username.is_empty() || password.is_empty() {
-        println!("Username and password cannot be empty.");
-        return;
-    }
-
-    match register_user(conn, &username, &password) {
-        Ok(_) => println!("User registered successfully."),
-        Err(e) => handle_error(e),
-    }
+enum MenuOption {
+    Register,
+    Login,
+    Update,
+    Fasting,
+    Analytics,
+    Exit,
+    Invalid,
 }
 
-/// Handles user login.
-fn handle_login(conn: &mut diesel::SqliteConnection) {
-    let username = prompt_input::<String>("Enter your username: ").unwrap_or_default();
-    let password = prompt_input::<String>("Enter your password: ").unwrap_or_default();
+fn select_menu_option() -> MenuOption {
+    let choice = prompt_input::<String>(
+        "\nChoose an action: register, login, update, fasting, analytics, or exit: ",
+    )
+    .unwrap_or_default()
+    .to_lowercase();
 
-    if username.is_empty() || password.is_empty() {
-        println!("Username and password cannot be empty.");
-        return;
-    }
-
-    match login_user(conn, &username, &password) {
-        Ok(user) => {
-            println!("Login successful for user ID: {:?}", user.id);
-            handle_fasting_menu(conn);
-        }
-        Err(e) => handle_error(e),
-    }
-}
-
-/// Handles updating user profiles.
-fn handle_update(conn: &mut diesel::SqliteConnection) {
-    let user_id = match get_valid_user_id() {
-        Some(id) => id,
-        None => {
-            println!("Invalid User ID.");
-            return;
-        }
-    };
-
-    let new_username = prompt_input::<String>("Enter a new username (or press Enter to skip): ");
-    let new_password = prompt_input::<String>("Enter a new password (or press Enter to skip): ");
-    let new_device_id = prompt_input::<String>("Enter a new device ID (or press Enter to skip): ");
-
-    match update_user_profile(
-        conn,
-        user_id,
-        new_username.filter(|s| !s.is_empty()).as_deref(),
-        new_password.filter(|s| !s.is_empty()).as_deref(),
-        new_device_id.filter(|s| !s.is_empty()).as_deref(),
-    ) {
-        Ok(_) => println!("User profile updated successfully."),
-        Err(e) => handle_error(e),
-    }
-}
-
-/// Handles the fasting-related actions.
-fn handle_fasting_menu(conn: &mut diesel::SqliteConnection) {
-    let user_id = match get_valid_user_id() {
-        Some(id) => id,
-        None => {
-            println!("Invalid User ID.");
-            return;
-        }
-    };
-
-    loop {
-        println!("\nFasting Menu: start, stop, status, back");
-        let choice = prompt_input::<String>("Choose an action: ")
-            .unwrap_or_default()
-            .to_lowercase();
-
-        match choice.as_str() {
-            "start" | "stop" => manage_fasting_session(conn, user_id),
-            "status" => match get_current_fasting_status(conn, user_id) {
-                Ok(Some((start, duration))) => {
-                    println!(
-                        "Current fasting started at: {}, duration: {} minutes.",
-                        start, duration
-                    );
-                }
-                Ok(None) => println!("No active fasting session."),
-                Err(e) => handle_error(e),
-            },
-            "back" => break,
-            _ => println!("Invalid choice. Please try again."),
-        }
-    }
-}
-
-/// Handles analytics-related actions.
-fn handle_analytics_menu(conn: &mut diesel::SqliteConnection) {
-    let user_id = match get_valid_user_id() {
-        Some(id) => id,
-        None => {
-            println!("Invalid User ID.");
-            return;
-        }
-    };
-
-    loop {
-        println!("\nAnalytics Menu: history, average, streak, total, checkpoints, summary, back");
-        let choice = prompt_input::<String>("Choose an action: ")
-            .unwrap_or_default()
-            .to_lowercase();
-
-        match choice.as_str() {
-            "history" => match get_fasting_history(conn, user_id) {
-                Ok(events) => {
-                    if events.is_empty() {
-                        println!("No fasting history found.");
-                    } else {
-                        for event in events {
-                            println!(
-                                "Start: {}, Stop: {}",
-                                event.start_time,
-                                event.stop_time
-                                    .map(|s| s.to_string())
-                                    .unwrap_or_else(|| "Ongoing".to_string())
-                            );
-                        }
-                    }
-                }
-                Err(e) => handle_error(e),
-            },
-            "average" => match calculate_average_fasting_duration(conn, user_id) {
-                Ok(Some(avg)) => println!("Average Fasting Duration: {} minutes", avg),
-                Ok(None) => println!("No fasting events found."),
-                Err(e) => handle_error(e),
-            },
-            "streak" => match calculate_current_streak(conn, user_id) {
-                Ok(streak) => println!("Current Streak: {} days", streak),
-                Err(e) => handle_error(e),
-            },
-            "total" => match calculate_total_fasting_time(conn, user_id) {
-                Ok(total) => println!("Total Fasting Time: {} minutes", total),
-                Err(e) => handle_error(e),
-            },
-            "checkpoints" => match get_fasting_checkpoints(conn, user_id) {
-                Ok(checkpoints) => {
-                    if checkpoints.is_empty() {
-                        println!("No checkpoints achieved.");
-                    } else {
-                        println!("Achieved Checkpoints: {:?}", checkpoints);
-                    }
-                }
-                Err(e) => handle_error(e),
-            },
-            "summary" => {
-                let start_date = get_valid_datetime("Enter start date (YYYY-MM-DD HH:MM): ");
-                let end_date = get_valid_datetime("Enter end date (YYYY-MM-DD HH:MM): ");
-
-                match calculate_weekly_fasting_summary(conn, user_id, start_date, end_date) {
-                    Ok(total) => println!("Total Fasting Duration: {} minutes", total),
-                    Err(e) => handle_error(e),
-                }
-            }
-            "back" => break,
-            _ => println!("Invalid choice. Please try again."),
-        }
+    match choice.as_str() {
+        "register" => MenuOption::Register,
+        "login" => MenuOption::Login,
+        "update" => MenuOption::Update,
+        "fasting" => MenuOption::Fasting,
+        "analytics" => MenuOption::Analytics,
+        "exit" => MenuOption::Exit,
+        _ => MenuOption::Invalid,
     }
 }
