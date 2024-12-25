@@ -3,7 +3,7 @@ extern crate diesel;
 extern crate dotenv;
 
 use dotenv::dotenv;
-use log;
+//use log;
 
 use crate::db::establish_connection;
 use crate::errors::handle_error;
