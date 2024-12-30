@@ -41,3 +41,9 @@ pub struct NewFastingEvent {
     pub start_time: NaiveDateTime,    // Start time of the fasting event.
     pub stop_time: Option<NaiveDateTime>, // Optional stop time (null for ongoing).
 }
+#[derive(Queryable, Debug, Serialize, Deserialize)]
+pub struct FastingSession {
+    pub id: String,
+    pub start_time: NaiveDateTime,
+    pub end_time: Option<NaiveDateTime>, // Optional, since a session might still be ongoing
+}

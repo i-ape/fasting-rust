@@ -138,3 +138,22 @@ pub fn get_fasting_checkpoints(
     achieved_checkpoints.sort_unstable();
     Ok(achieved_checkpoints)
 }
+/// Displays the user's fasting history from the database.
+pub fn show_fasting_history(conn: &mut SqliteConnection) {
+    match fasting_sessions.load::<FastingSession>(conn) {
+        Ok(sessions) => {
+            println!("Fasting History:");
+            for session in sessions {
+                let end_time = session.end_time.unwrap_or_else(|| chrono::Utc::now().naive_utc());
+                let duration = end_time - session.start_time;
+                println!(
+                    "- Start: {}, End: {}, Duration: {:.2?}",
+                    session.start_time, 
+                    session.end_time.map_or("Ongoing".to_string(), |end| end.to_string()), 
+                    duration
+                );
+            }
+        }
+        Err(e) => eprintln!("Error fetching fasting history: {:?}", e),
+    }
+}
