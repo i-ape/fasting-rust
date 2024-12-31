@@ -1,10 +1,10 @@
 use crate::schema::{fasting_events, users};
-use chrono::NaiveDateTime;
+use chrono::{naive::serde, NaiveDateTime};
 use diesel::prelude::*;
-use rocket::serde::Serialize; // Diesel prelude includes commonly used traits.
+use serde::{Serialize, Deserialize}; // Use Serde's Serialize and Deserialize
 
 /// Represents a user in the database.
-#[derive(Queryable, Insertable, AsChangeset, Identifiable, Selectable, Debug)] // Added Selectable
+#[derive(Queryable, Insertable, AsChangeset, Identifiable, Selectable, Debug)]
 #[diesel(table_name = users)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 pub struct User {
@@ -26,6 +26,7 @@ pub struct NewUser {
 /// Represents a fasting event in the database.
 #[derive(Queryable, Identifiable, Debug)]
 #[diesel(table_name = fasting_events)]
+#[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 pub struct FastingEvent {
     pub id: Option<i32>,              // Fasting event ID (nullable for new inserts).
     pub user_id: i32,                 // ID of the user who started the event.
@@ -42,7 +43,10 @@ pub struct NewFastingEvent {
     pub start_time: NaiveDateTime,    // Start time of the fasting event.
     pub stop_time: Option<NaiveDateTime>, // Optional stop time (null for ongoing).
 }
-#[derive(Queryable, Debug, Serialize, Serialize)]
+
+/// Represents a fasting session.
+#[derive(Queryable, Debug, Serialize, Deserialize)] // Fixed duplicate derive
+#[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 pub struct FastingSession {
     pub id: String,
     pub start_time: NaiveDateTime,
