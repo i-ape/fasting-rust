@@ -1,6 +1,7 @@
 use crate::schema::{fasting_events, users};
 use chrono::NaiveDateTime;
-use diesel::prelude::*; // Diesel prelude includes commonly used traits.
+use diesel::prelude::*;
+use rocket::serde::Serialize; // Diesel prelude includes commonly used traits.
 
 /// Represents a user in the database.
 #[derive(Queryable, Insertable, AsChangeset, Identifiable, Selectable, Debug)] // Added Selectable
@@ -41,7 +42,7 @@ pub struct NewFastingEvent {
     pub start_time: NaiveDateTime,    // Start time of the fasting event.
     pub stop_time: Option<NaiveDateTime>, // Optional stop time (null for ongoing).
 }
-#[derive(Queryable, Debug, Serialize, Deserialize)]
+#[derive(Queryable, Debug, Serialize, Serialize)]
 pub struct FastingSession {
     pub id: String,
     pub start_time: NaiveDateTime,

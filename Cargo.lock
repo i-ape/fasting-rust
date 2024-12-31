@@ -471,6 +471,7 @@ dependencies = [
  "rocket",
  "rocket_sync_db_pools",
  "schema",
+ "serde_json",
  "structopt",
 ]
 

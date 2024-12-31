@@ -1,5 +1,7 @@
 use crate::errors::FastingAppError;
 use crate::models::FastingEvent;
+use crate::models::FastingSession;
+use crate::schema::fasting_sessions::dsl::fasting_sessions;
 use crate::schema::fasting_events::dsl::{fasting_events, start_time, stop_time, user_id as schema_user_id};
 use chrono::{NaiveDateTime, Utc};
 use diesel::prelude::*;
