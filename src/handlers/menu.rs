@@ -4,6 +4,8 @@ use crate::handlers::analytics::{
     show_fasting_history, show_average_fasting_duration, show_current_streak, show_total_fasting_time, view_goals,
 };
 use crate::handlers::goals::add_goal;
+use crate::schema::fasting_events::user_id;
+use crate::schema::fasting_sessions::end_time;
 
 /// Displays the main menu and handles user actions.
 pub fn display_main_menu(conn: &mut SqliteConnection) {
@@ -40,8 +42,8 @@ pub fn handle_fasting_menu(conn: &mut SqliteConnection) {
         let choice = prompt_user_choice();
 
         match choice {
-            1 => start_fasting(conn),
-            2 => stop_fasting(conn),
+            1 => start_fasting(conn, user_id, event_start_time),
+            2 => stop_fasting(conn, user_id, end_time),
             3 => check_fasting_status(conn),
             4 => add_goal(conn), // Call the goal-adding function
             5 => break,
