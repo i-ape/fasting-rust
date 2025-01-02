@@ -1,7 +1,6 @@
 use crate::schema::{fasting_events, users};
-use chrono::{naive::serde, NaiveDateTime};
+use chrono::{naive::serde, serde::{Serialize, Deserialize}, NaiveDateTime};
 use diesel::prelude::*;
-use serde::{Serialize, Deserialize}; // Use Serde's Serialize and Deserialize
 
 /// Represents a user in the database.
 #[derive(Queryable, Insertable, AsChangeset, Identifiable, Selectable, Debug)]
