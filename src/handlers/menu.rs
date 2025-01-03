@@ -1,8 +1,8 @@
 use chrono::{NaiveDateTime, Utc};
 use diesel::SqliteConnection;
-use crate::handlers::fasting::{start_fasting, stop_fasting, check_fasting_status};
+use crate::handlers::fasting::{start_fasting, stop_fasting, get_current_fasting_status};
 use crate::handlers::analytics::{
-    show_fasting_history, show_average_fasting_duration, show_current_streak, show_total_fasting_time, view_goals,
+    show_fasting_history, calculate_average_fasting_duration, show_current_streak, show_total_fasting_time, view_goals,
 };
 use crate::handlers::goals::add_goal;
 
@@ -47,7 +47,7 @@ pub fn handle_fasting_menu(conn: &mut SqliteConnection) {
                 start_fasting(conn, user_id, event_start_time); // Pass all arguments
             }
             2 => stop_fasting(conn),
-            3 => check_fasting_status(conn),
+            3 => get_current_fasting_status(conn),
             4 => add_goal(conn),
             5 => break,
             _ => println!("Invalid choice. Please select a valid option."),
@@ -69,7 +69,7 @@ pub fn handle_analytics_menu(conn: &mut SqliteConnection) {
 
         match choice {
             1 => show_fasting_history(conn),
-            2 => show_average_fasting_duration(conn),
+            2 => calculate_average_fasting_duration(conn),
             3 => show_current_streak(conn),
             4 => show_total_fasting_time(conn),
             5 => break,
