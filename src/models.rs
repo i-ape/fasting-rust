@@ -1,5 +1,5 @@
 use crate::schema::{fasting_events, users};
-use chrono::{naive::serde, serde::{Serialize, Deserialize}, NaiveDateTime};
+use chrono::{naive::serde::{Serialize, Deserialize}, NaiveDateTime};
 use diesel::prelude::*;
 
 /// Represents a user in the database.

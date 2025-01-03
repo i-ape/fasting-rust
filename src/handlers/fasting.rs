@@ -5,26 +5,25 @@ use chrono::{NaiveDateTime, Utc};
 use diesel::prelude::*;
 use diesel::SqliteConnection;
 
-/// Starts a new fasting event for a user.
+/// Starts a fasting event and inserts it into the database.
 pub fn start_fasting(
     conn: &mut SqliteConnection,
     user_id: i32,
     event_start_time: NaiveDateTime,
-) -> Result<usize, FastingAppError> {
-    if find_active_fasting_event(conn, user_id)?.is_some() {
-        return Err(FastingAppError::ExistingSessionError);
-    }
-
+) {
     let new_event = NewFastingEvent {
         user_id,
         start_time: event_start_time,
-        stop_time: None,
+        stop_time: None, // Ongoing session
     };
 
-    diesel::insert_into(fasting_events)
+    match diesel::insert_into(fasting_events)
         .values(&new_event)
         .execute(conn)
-        .map_err(FastingAppError::DatabaseError)
+    {
+        Ok(_) => println!("Fasting session started successfully!"),
+        Err(e) => eprintln!("Error starting fasting session: {:?}", e),
+    }
 }
 
 /// Stops an active fasting event for a user.

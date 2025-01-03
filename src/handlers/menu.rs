@@ -43,7 +43,11 @@ pub fn handle_fasting_menu(conn: &mut SqliteConnection) {
         let choice = prompt_user_choice();
 
         match choice {
-            1 => start_fasting(conn, i32, NaiveDateTime),
+            1 => {
+                let user_id = prompt_user_id();
+                let event_start_time = Utc::now().naive_utc(); // Get the current time
+                start_fasting(conn, user_id, event_start_time); // Pass all arguments
+            }
             2 => stop_fasting(conn, i32, NaiveDateTime),
             3 => check_fasting_status(conn),
             4 => add_goal(conn), // Call the goal-adding function
