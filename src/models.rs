@@ -38,9 +38,9 @@ pub struct FastingEvent {
 #[derive(Insertable)]
 #[diesel(table_name = fasting_events)]
 pub struct NewFastingEvent {
-    pub user_id: i32,                 // ID of the user who is starting the event.
-    pub start_time: NaiveDateTime,    // Start time of the fasting event.
-    pub stop_time: Option<NaiveDateTime>, // Optional stop time (null for ongoing).
+    pub user_id: i32,               // ID of the user
+    pub start_time: NaiveDateTime,  // Start time of the fasting event
+    pub stop_time: Option<NaiveDateTime>, // Optional stop time (None for ongoing)
 }
 
 /// Represents a fasting session.
