@@ -1,3 +1,4 @@
+use chrono::NaiveDateTime;
 use diesel::SqliteConnection;
 use crate::handlers::fasting::{start_fasting, stop_fasting, check_fasting_status};
 use crate::handlers::analytics::{
@@ -42,8 +43,8 @@ pub fn handle_fasting_menu(conn: &mut SqliteConnection) {
         let choice = prompt_user_choice();
 
         match choice {
-            1 => start_fasting(conn, user_id, event_start_time),
-            2 => stop_fasting(conn, user_id, end_time),
+            1 => start_fasting(conn, i32, NaiveDateTime),
+            2 => stop_fasting(conn, i32, NaiveDateTime),
             3 => check_fasting_status(conn),
             4 => add_goal(conn), // Call the goal-adding function
             5 => break,
