@@ -1,5 +1,6 @@
 pub mod analytics;
 pub mod fasting;
+pub mod goals;
 pub mod menu;
 
 // Re-export functions for easy access from `handlers` module

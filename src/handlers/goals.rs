@@ -24,3 +24,21 @@ pub fn add_goal(conn: &mut PgConnection) {
         Err(e) => eprintln!("Error adding goal: {:?}", e),
     }
 }
+
+
+pub fn view_goals(user_id: i32, conn: &mut SqliteConnection) -> Result<(), FastingAppError> {
+    // Example logic: Retrieve and display goals from the database
+    let goals = fasting_goals::table
+        .filter(fasting_goals::user_id.eq(user_id))
+        .load::<FastingGoal>(conn)
+        .map_err(FastingAppError::DatabaseError)?;
+
+    if goals.is_empty() {
+        println!("No fasting goals found.");
+    } else {
+        for goal in goals {
+            println!("Goal: {} hours by {}", goal.duration_hours, goal.deadline);
+        }
+    }
+    Ok(())
+}

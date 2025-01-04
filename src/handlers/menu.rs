@@ -2,9 +2,8 @@ use chrono::{NaiveDateTime, Utc};
 use diesel::SqliteConnection;
 use crate::handlers::fasting::{start_fasting, stop_fasting, get_current_fasting_status};
 use crate::handlers::analytics::{
-    show_fasting_history, calculate_average_fasting_duration, show_current_streak, show_total_fasting_time, view_goals,
-};
-use crate::handlers::goals::add_goal;
+    show_fasting_history, calculate_average_fasting_duration, calculate_current_streak, calculate_total_fasting_time};
+use crate::handlers::goals::{add_goal, view_goals};
 
 /// Displays the main menu and handles user actions.
 pub fn display_main_menu(conn: &mut SqliteConnection) {
