@@ -1,4 +1,5 @@
 use diesel::prelude::*;
+use crate::errors::{handle_error, FastingAppError};
 use crate::models::Goal;
 use crate::schema::goals::dsl::*;
 
