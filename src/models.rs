@@ -51,3 +51,11 @@ pub struct FastingSession {
     pub start_time: NaiveDateTime,
     pub end_time: Option<NaiveDateTime>, // Optional, since a session might still be ongoing
 }
+
+#[derive(Debug, Queryable)]
+pub struct FastingGoal {
+    pub id: i32,
+    pub user_id: i32,
+    pub goal_duration: i32, // Duration in minutes, for example
+    pub created_at: chrono::NaiveDateTime,
+}
