@@ -52,10 +52,12 @@ pub struct FastingSession {
     pub end_time: Option<NaiveDateTime>, // Optional, since a session might still be ongoing
 }
 
-#[derive(Debug, Queryable)]
+#[derive(Queryable, Insertable, Debug)]
+#[table_name = "fasting_goals"]
 pub struct FastingGoal {
-    pub id: i32,
+    pub id: Option<i32>,
     pub user_id: i32,
-    pub goal_duration: i32, // Duration in minutes, for example
-    pub created_at: chrono::NaiveDateTime,
+    pub goal_duration: i32,
+    pub deadline: NaiveDateTime,
+    pub created_at: chrono::NaiveDateTime,,
 }
