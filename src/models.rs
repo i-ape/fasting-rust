@@ -1,63 +1,62 @@
-use crate::schema::{fasting_events, users};
-use chrono::{naive::serde::{Serialize, Deserialize}, NaiveDateTime};
+use crate::schema::{fasting_events, fasting_goals, users};
+use chrono::{NaiveDateTime, Utc};
 use diesel::prelude::*;
 
 /// Represents a user in the database.
-#[derive(Queryable, Insertable, AsChangeset, Identifiable, Selectable, Debug)]
+#[derive(Queryable, Insertable, AsChangeset, Identifiable, Debug)]
 #[diesel(table_name = users)]
-#[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 pub struct User {
-    pub id: Option<i32>,                // Nullable<Integer>
-    pub username: String,              // Text
-    pub hashed_password: String,       // Text
-    pub device_id: Option<String>,     // Nullable<Text>
-    pub created_at: Option<NaiveDateTime>, // Nullable<Timestamp>
+    pub id: i32, // Primary keys are not nullable
+    pub username: String,
+    pub hashed_password: String,
+    pub device_id: Option<String>,
+    pub created_at: Option<NaiveDateTime>,
 }
 
 /// Represents a new user to be inserted into the database.
 #[derive(Insertable)]
 #[diesel(table_name = users)]
 pub struct NewUser {
-    pub username: String,             // Username for the new user.
-    pub hashed_password: String,      // Hashed password for the new user.
+    pub username: String,
+    pub hashed_password: String,
 }
 
 /// Represents a fasting event in the database.
 #[derive(Queryable, Identifiable, Debug)]
 #[diesel(table_name = fasting_events)]
-#[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 pub struct FastingEvent {
-    pub id: Option<i32>,              // Fasting event ID (nullable for new inserts).
-    pub user_id: i32,                 // ID of the user who started the event.
-    pub start_time: NaiveDateTime,    // Start time of the fasting event.
-    pub stop_time: Option<NaiveDateTime>, // Optional stop time (null if ongoing).
-    pub created_at: Option<NaiveDateTime>, // Timestamp of fasting event creation.
+    pub id: i32, // Primary key
+    pub user_id: i32, // Foreign key to users table
+    pub start_time: NaiveDateTime,
+    pub stop_time: Option<NaiveDateTime>,
+    pub created_at: Option<NaiveDateTime>,
 }
 
 /// Represents a new fasting event to be inserted into the database.
 #[derive(Insertable)]
 #[diesel(table_name = fasting_events)]
 pub struct NewFastingEvent {
-    pub user_id: i32,               // ID of the user
-    pub start_time: NaiveDateTime,  // Start time of the fasting event
-    pub stop_time: Option<NaiveDateTime>, // Optional stop time (None for ongoing)
-}
-
-/// Represents a fasting session.
-#[derive(Queryable, Debug, Serialize, Deserialize)] // Fixed duplicate derive
-#[diesel(check_for_backend(diesel::sqlite::Sqlite))]
-pub struct FastingSession {
-    pub id: String,
+    pub user_id: i32,
     pub start_time: NaiveDateTime,
-    pub end_time: Option<NaiveDateTime>, // Optional, since a session might still be ongoing
+    pub stop_time: Option<NaiveDateTime>,
 }
 
+/// Represents a fasting goal.
 #[derive(Queryable, Insertable, Debug)]
-#[table_name = "fasting_goals"]
+#[diesel(table_name = fasting_goals)]
 pub struct FastingGoal {
-    pub id: Option<i32>,
+    pub id: i32,
     pub user_id: i32,
     pub goal_duration: i32,
     pub deadline: NaiveDateTime,
-    pub created_at: chrono::NaiveDateTime,,
+    pub created_at: NaiveDateTime,
+}
+
+/// Represents a fasting session.
+#[derive(Queryable, Debug)]
+#[diesel(table_name = fasting_sessions)]
+pub struct FastingSession {
+    pub id: String,
+    pub start_time: NaiveDateTime,
+    pub end_time: Option<NaiveDateTime>,
 }
