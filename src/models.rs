@@ -49,7 +49,7 @@ pub struct FastingGoal {
     pub user_id: i32,
     pub goal_duration: i32,
     pub deadline: NaiveDateTime,
-    pub created_at: NaiveDateTime,
+    pub created_at: Option<NaiveDateTime>,
 }
 
 /// Represents a fasting session.
