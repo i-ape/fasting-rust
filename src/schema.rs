@@ -1,6 +1,16 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
+    fasting_events (id) {
+        id -> Nullable<Integer>,
+        user_id -> Integer,
+        start_time -> Timestamp,
+        stop_time -> Nullable<Timestamp>,
+        created_at -> Nullable<Timestamp>,
+    }
+}
+
+diesel::table! {
     fasting_goals (id) {
         id -> Nullable<Integer>,
         user_id -> Integer,
@@ -28,10 +38,12 @@ diesel::table! {
     }
 }
 
+diesel::joinable!(fasting_events -> users (user_id));
 diesel::joinable!(fasting_goals -> users (user_id));
 diesel::joinable!(fasting_sessions -> users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
+    fasting_events,
     fasting_goals,
     fasting_sessions,
     users,
