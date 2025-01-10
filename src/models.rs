@@ -53,10 +53,10 @@ pub struct FastingGoal {
 }
 
 /// Represents a fasting session.
-#[derive(Queryable, Debug)]
+#[derive(Queryable, Identifiable, Debug)]
 #[diesel(table_name = fasting_sessions)]
 pub struct FastingSession {
-    pub id: String,
-    pub start_time: NaiveDateTime,
-    pub end_time: Option<NaiveDateTime>,
+    pub id: String,                   // TEXT
+    pub start_time: NaiveDateTime,    // TIMESTAMP
+    pub end_time: Option<NaiveDateTime>, // Nullable<TIMESTAMP>
 }
