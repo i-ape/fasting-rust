@@ -22,8 +22,7 @@ diesel::table! {
 
 diesel::table! {
     fasting_sessions (id) {
-        id -> Nullable<Integer>,
-        user_id -> Integer,
+        id -> Nullable<Text>,
         start_time -> Timestamp,
         end_time -> Nullable<Timestamp>,
     }
@@ -40,7 +39,6 @@ diesel::table! {
 
 diesel::joinable!(fasting_events -> users (user_id));
 diesel::joinable!(fasting_goals -> users (user_id));
-diesel::joinable!(fasting_sessions -> users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     fasting_events,

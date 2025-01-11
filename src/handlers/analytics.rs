@@ -160,9 +160,9 @@ pub fn show_fasting_history(conn: &mut SqliteConnection) {
     }
 }
 
-pub fn get_fasting_sessions(conn: &mut SqliteConnection) -> Result<Vec<FastingSession>, FastingAppError> {
+pub fn get_fasting_sessions(conn: &mut SqliteConnection) -> Result<Vec<FastingEvent>, FastingAppError> {
     fasting_sessions
-        .select(FastingSession::as_select()) // Explicitly match struct fields
-        .load::<FastingSession>(conn)
+        .select(FastingEvent::as_select()) // Explicitly match struct fields
+        .load::<FastingEvent>(conn)
         .map_err(FastingAppError::DatabaseError)
 }

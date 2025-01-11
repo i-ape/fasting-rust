@@ -33,14 +33,15 @@ pub struct FastingEvent {
 }
 
 /// Represents a new fasting event to be inserted into the database.
-#[derive(Insertable)]
+#[derive(Queryable, Identifiable, Debug, Selectable)]
 #[diesel(table_name = fasting_events)]
-pub struct NewFastingEvent {
-    pub user_id: i32,
-    pub start_time: NaiveDateTime,
-    pub stop_time: Option<NaiveDateTime>,
+pub struct FastingEvent {
+    pub id: Option<i32>,              // Nullable<Integer>
+    pub user_id: i32,                 // Integer
+    pub start_time: NaiveDateTime,    // Timestamp
+    pub stop_time: Option<NaiveDateTime>, // Nullable<Timestamp>
+    pub created_at: Option<NaiveDateTime>, // Nullable<Timestamp>
 }
-
 /// Represents a fasting goal.
 #[derive(Queryable, Insertable, Debug)]
 #[diesel(table_name = fasting_goals)]
