@@ -159,3 +159,10 @@ pub fn show_fasting_history(conn: &mut SqliteConnection) {
         Err(e) => eprintln!("Error fetching fasting history: {:?}", e),
     }
 }
+
+pub fn get_fasting_sessions(conn: &mut SqliteConnection) -> Result<Vec<FastingSession>, FastingAppError> {
+    fasting_sessions
+        .select(FastingSession::as_select()) // Explicitly match struct fields
+        .load::<FastingSession>(conn)
+        .map_err(FastingAppError::DatabaseError)
+}
