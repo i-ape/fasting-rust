@@ -1,1 +1,1 @@
-DROP TABLE fasting_sessions;
+DROP TABLE IF EXISTS fasting_sessions;

@@ -1,5 +1,7 @@
 CREATE TABLE fasting_sessions (
-    id TEXT PRIMARY KEY,
-    start_time TIMESTAMP NOT NULL,
-    end_time TIMESTAMP
+    id INTEGER PRIMARY KEY AUTOINCREMENT,      -- Auto-incrementing primary key
+    user_id INTEGER NOT NULL,                  -- Foreign key to users table
+    start_time TIMESTAMP NOT NULL,             -- Start time of the fasting session
+    stop_time TIMESTAMP NULL,                  -- Optional stop time
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Auto-generated creation timestamp
 );

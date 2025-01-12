@@ -165,6 +165,6 @@ pub fn get_fasting_sessions(
 ) -> Result<Vec<FastingSession>, FastingAppError> {
     fasting_sessions
         .select(FastingSession::as_select()) // Match struct fields explicitly
-        .load::<FastingSession>(conn)
+        .load::<FastingSession>(conn)        // Load results into FastingSession struct
         .map_err(FastingAppError::DatabaseError)
 }

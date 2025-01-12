@@ -3,14 +3,15 @@ use chrono::{NaiveDateTime, Utc};
 use diesel::prelude::*;
 
 /// Represents a user in the database.
-#[derive(Queryable, Insertable, AsChangeset, Identifiable, Debug)]
+#[derive(Queryable, Insertable, AsChangeset, Identifiable, Selectable, Debug)]
 #[diesel(table_name = users)]
+#[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 pub struct User {
-    pub id: i32, // Primary keys are not nullable
-    pub username: String,
-    pub hashed_password: String,
-    pub device_id: Option<String>,
-    pub created_at: Option<NaiveDateTime>,
+    pub id: Option<i32>,                // Nullable<Integer>
+    pub username: String,              // Text
+    pub hashed_password: String,       // Text
+    pub device_id: Option<String>,     // Nullable<Text>
+    pub created_at: Option<chrono::NaiveDateTime>, // Nullable<Timestamp>
 }
 
 /// Represents a new user to be inserted into the database.
@@ -22,17 +23,6 @@ pub struct NewUser {
 }
 
 /// Represents a fasting event in the database.
-#[derive(Queryable, Identifiable, Debug)]
-#[diesel(table_name = fasting_events)]
-pub struct FastingEvent {
-    pub id: i32, // Primary key
-    pub user_id: i32, // Foreign key to users table
-    pub start_time: NaiveDateTime,
-    pub stop_time: Option<NaiveDateTime>,
-    pub created_at: Option<NaiveDateTime>,
-}
-
-/// Represents a new fasting event to be inserted into the database.
 #[derive(Queryable, Identifiable, Debug, Selectable)]
 #[diesel(table_name = fasting_events)]
 pub struct FastingEvent {

@@ -10,9 +10,7 @@ pub fn find_user_by_username(
 ) -> Result<User, FastingAppError> {
     users
         .filter(username.eq(username_input))
-        .select(User::as_select())
+        .select(User::as_select()) // Match struct fields explicitly
         .first::<User>(conn)
-        .optional()
-        .map_err(FastingAppError::DatabaseError)?
-        .ok_or(FastingAppError::InvalidCredentials)
+        .map_err(FastingAppError::DatabaseError)
 }
