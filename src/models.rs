@@ -42,6 +42,7 @@ pub struct FastingEvent {
     pub stop_time: Option<NaiveDateTime>, // Nullable<Timestamp>
     pub created_at: Option<NaiveDateTime>, // Nullable<Timestamp>
 }
+
 /// Represents a fasting goal.
 #[derive(Queryable, Insertable, Debug)]
 #[diesel(table_name = fasting_goals)]
@@ -54,10 +55,12 @@ pub struct FastingGoal {
 }
 
 /// Represents a fasting session.
-#[derive(Queryable, Identifiable, Debug)]
+#[derive(Queryable, Identifiable, Debug, Selectable)]
 #[diesel(table_name = fasting_sessions)]
 pub struct FastingSession {
-    pub id: String,                   // TEXT
-    pub start_time: NaiveDateTime,    // TIMESTAMP
-    pub end_time: Option<NaiveDateTime>, // Nullable<TIMESTAMP>
+    pub id: Option<i32>,               // Nullable<Integer>
+    pub user_id: i32,                  // Integer
+    pub start_time: NaiveDateTime,     // Timestamp
+    pub stop_time: Option<NaiveDateTime>, // Nullable<Timestamp>
+    pub created_at: Option<NaiveDateTime>, // Nullable<Timestamp>
 }
