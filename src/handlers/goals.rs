@@ -41,7 +41,7 @@ pub fn add_goal(user_id: i32, conn: &mut SqliteConnection) -> Result<(), Fasting
     let new_goal = FastingGoal {
         id: None, // Primary key is auto-generated for SQLite.
         user_id,
-        duration_hours,
+        goal_duration,
         deadline,
         created_at: chrono::Utc::now().naive_utc(),
     };
