@@ -1,8 +1,8 @@
-use diesel::prelude::*;
 use crate::errors::{handle_error, FastingAppError};
 use crate::models::FastingGoal;
 use crate::schema::fasting_goals::dsl::*;
 use chrono::NaiveDateTime;
+use diesel::prelude::*;
 
 /// Adds a new fasting goal for the user.
 pub fn add_goal(user_id: i32, conn: &mut SqliteConnection) -> Result<(), FastingAppError> {
@@ -28,22 +28,23 @@ pub fn add_goal(user_id: i32, conn: &mut SqliteConnection) -> Result<(), Fasting
         .read_line(&mut deadline_input)
         .expect("Failed to read input");
 
-    let deadline: NaiveDateTime = match NaiveDateTime::parse_from_str(deadline_input.trim(), "%Y-%m-%d %H:%M") {
-        Ok(date) => date,
-        Err(_) => {
-            println!("Invalid date format. Please use YYYY-MM-DD HH:MM.");
-            return Err(FastingAppError::InvalidRequest(
-                "Invalid deadline entered.".to_string(),
-            ));
-        }
-    };
+    let deadline: NaiveDateTime =
+        match NaiveDateTime::parse_from_str(deadline_input.trim(), "%Y-%m-%d %H:%M") {
+            Ok(date) => date,
+            Err(_) => {
+                println!("Invalid date format. Please use YYYY-MM-DD HH:MM.");
+                return Err(FastingAppError::InvalidRequest(
+                    "Invalid deadline entered.".to_string(),
+                ));
+            }
+        };
 
     let new_goal = FastingGoal {
-        id: None, // Primary key is auto-generated for SQLite.
-        user_id,
-        goal_duration,
-        deadline,
-        created_at: chrono::Utc::now().naive_utc(),
+        id: 0, // Or any valid `i32` value
+        user_id: some_user_id,
+        goal_duration: some_goal_duration,
+        deadline: some_deadline,
+        created_at: Some(chrono::Utc::now().naive_utc()),
     };
 
     diesel::insert_into(fasting_goals)
