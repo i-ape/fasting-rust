@@ -11,19 +11,17 @@ pub fn start_fasting(
     user_id: i32,
     event_start_time: NaiveDateTime,
 ) {
-    let new_event = NewFastingEvent {
-        user_id,
-        start_time: event_start_time,
-        stop_time: None, // Ongoing session
+    let new_fasting_event = NewFastingEvent {
+        user_id: some_user_id,
+        start_time: chrono::Utc::now().naive_utc(),
+        stop_time: None, // Ongoing event
+        created_at: Some(chrono::Utc::now().naive_utc()),
     };
-
-    match diesel::insert_into(fasting_events)
-        .values(&new_event)
+    
+    diesel::insert_into(fasting_events::table)
+        .values(&new_fasting_event)
         .execute(conn)
-    {
-        Ok(_) => println!("Fasting session started successfully!"),
-        Err(e) => eprintln!("Error starting fasting session: {:?}", e),
-    }
+        .expect("Error inserting new fasting event");
 }
 
 /// Stops an active fasting event for a user.
