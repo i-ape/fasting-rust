@@ -9,19 +9,23 @@ use diesel::SqliteConnection;
 pub fn start_fasting(
     conn: &mut SqliteConnection,
     user_id: i32,
-    event_start_time: NaiveDateTime,
-) {
+    event_start_time: chrono::NaiveDateTime,
+) -> Result<(), FastingAppError>  {
+    let _ = event_start_time;
     let new_fasting_event = NewFastingEvent {
-        user_id: some_user_id,
+        user_id,
         start_time: chrono::Utc::now().naive_utc(),
         stop_time: None, // Ongoing event
         created_at: Some(chrono::Utc::now().naive_utc()),
     };
     
-    diesel::insert_into(fasting_events::table)
+     diesel::insert_into(fasting_events)
         .values(&new_fasting_event)
         .execute(conn)
-        .expect("Error inserting new fasting event");
+        .map_err(FastingAppError::DatabaseError)?;
+
+    println!("Fasting session started successfully.");
+    Ok(())
 }
 
 /// Stops an active fasting event for a user.
