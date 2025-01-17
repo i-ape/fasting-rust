@@ -1,4 +1,5 @@
 use crate::schema::{fasting_events, fasting_goals, users};
+use crate::schema::fasting_sessions;
 use chrono::{NaiveDateTime, Utc};
 use diesel::prelude::*;
 
@@ -37,8 +38,8 @@ pub struct FastingEvent {
 #[derive(Queryable, Insertable, Debug)]
 #[diesel(table_name = fasting_goals)]
 pub struct FastingGoal {
-    pub id: i32,
-    pub user_id: i32,
+    pub id: Option<i32>, // Nullable<Integer>
+    pub user_id: i32,    // Integer
     pub goal_duration: i32,
     pub deadline: NaiveDateTime,
     pub created_at: Option<NaiveDateTime>,
