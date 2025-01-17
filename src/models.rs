@@ -1,5 +1,4 @@
 use crate::schema::{fasting_events, fasting_goals, users};
-use crate::schema::fasting_sessions::dsl::fasting_sessions;
 use chrono::{NaiveDateTime, Utc};
 use diesel::prelude::*;
 
