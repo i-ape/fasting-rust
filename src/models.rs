@@ -7,20 +7,21 @@ use diesel::prelude::*;
 #[diesel(table_name = users)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 pub struct User {
-    pub id: i32,                        // Non-nullable<Integer>
-    pub username: String,               // Text
-    pub hashed_password: String,        // Text
-    pub device_id: Option<String>,      // Nullable<Text>
+    pub id: Option<i32>,               // Nullable<Integer> matches schema
+    pub username: String,              // Text
+    pub hashed_password: String,       // Text
+    pub device_id: Option<String>,     // Nullable<Text>
     pub created_at: Option<NaiveDateTime>, // Nullable<Timestamp>
 }
-
 /// Represents a new user to be inserted into the database.
 #[derive(Insertable)]
 #[diesel(table_name = users)]
 pub struct NewUser {
     pub username: String,
     pub hashed_password: String,
+    pub device_id: Option<String>,
 }
+
 
 /// Represents a fasting event in the database.
 #[derive(Queryable, Identifiable, Debug, Selectable)]

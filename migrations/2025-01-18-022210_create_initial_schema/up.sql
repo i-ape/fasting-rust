@@ -1,9 +1,9 @@
 CREATE TABLE users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL UNIQUE,
+    id INTEGER PRIMARY KEY AUTOINCREMENT, -- Nullable<Integer> (auto-generated)
+    username TEXT NOT NULL,
     hashed_password TEXT NOT NULL,
     device_id TEXT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NULL
 );
 
 CREATE TABLE fasting_events (
