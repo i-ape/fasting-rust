@@ -22,7 +22,7 @@ diesel::table! {
 
 diesel::table! {
     fasting_sessions (id) {
-        id -> Nullable<Integer>,
+        id -> Integer,
         user_id -> Integer,
         start_time -> Timestamp,
         stop_time -> Nullable<Timestamp>,

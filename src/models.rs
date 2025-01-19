@@ -1,5 +1,6 @@
 use crate::schema::{fasting_events, fasting_goals, fasting_sessions, users};
 use chrono::NaiveDateTime;
+use diesel::prelude::*;
 
 /// Represents a user in the database.
 #[derive(Queryable, Insertable, AsChangeset, Identifiable, Selectable, Debug)]
@@ -57,9 +58,9 @@ pub struct FastingGoal {
 #[derive(Queryable, Identifiable, Debug, Selectable)]
 #[diesel(table_name = fasting_sessions)]
 pub struct FastingSession {
-    pub id: i32,                        // Non-nullable<Integer>
-    pub user_id: i32,                   // Integer (foreign key)
-    pub start_time: NaiveDateTime,      // Timestamp
-    pub stop_time: Option<NaiveDateTime>, // Nullable<Timestamp>
+    pub id: Option<i32>,                   // Non-nullable<Integer>
+    pub user_id: i32,                      // Integer (foreign key)
+    pub start_time: NaiveDateTime,         // Timestamp
+    pub stop_time: Option<NaiveDateTime>,  // Nullable<Timestamp>
     pub created_at: Option<NaiveDateTime>, // Nullable<Timestamp>
 }
