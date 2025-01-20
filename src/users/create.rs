@@ -15,7 +15,9 @@ pub fn create_user(
     let new_user = NewUser {
         username: username_input.to_string(),
         hashed_password: hashedp,
+        device_id: None, // No device ID provided
     };
+    
     diesel::insert_into(users)
         .values(&new_user)
         .execute(conn)
