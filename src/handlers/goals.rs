@@ -70,7 +70,7 @@ pub fn view_goals(user_id: i32, conn: &mut SqliteConnection) -> Result<(), Fasti
         for goal in goals {
             println!(
                 "Goal: {} hours, Deadline: {}, Created At: {}",
-                goal.duration_hours, goal.deadline, goal.created_at
+                goal.goal_duration, goal.deadline, goal.created_at
             );
         }
     }
