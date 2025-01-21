@@ -47,10 +47,13 @@ pub fn handle_fasting_menu(conn: &mut SqliteConnection) {
                     Err(e) => eprintln!("Error starting fasting session: {}", e),
                 }
             }
-            Some(2) => match stop_fasting(conn, user_id) {
-                Ok(_) => println!("Fasting session stopped successfully."),
-                Err(e) => eprintln!("Error stopping fasting session: {}", e),
-            },
+            Some(2) => {
+                let end_time = Utc::now().naive_utc(); // Provide the current time as the `end_time`
+                match stop_fasting(conn, user_id, end_time) {
+                    Ok(_) => println!("Fasting session stopped successfully."),
+                    Err(e) => eprintln!("Error stopping fasting session: {}", e),
+                }
+            }
             Some(3) => match get_current_fasting_status(conn, user_id) {
                 Ok(Some((start_time, duration))) => println!(
                     "Fasting started at: {} and has lasted for {} minutes.",
@@ -68,6 +71,7 @@ pub fn handle_fasting_menu(conn: &mut SqliteConnection) {
         }
     }
 }
+
 
 /// Handles the analytics-related menu actions.
 pub fn handle_analytics_menu(conn: &mut SqliteConnection) {
