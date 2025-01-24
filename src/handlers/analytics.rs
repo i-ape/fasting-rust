@@ -1,10 +1,10 @@
 use crate::errors::FastingAppError;
 use crate::models::{FastingEvent, FastingSession};
 use crate::schema::fasting_sessions::dsl::{
-    fasting_sessions, session_stop_time, start_time, user_id as session_user_id,
+    fasting_sessions, start_time as session_start_time, stop_time as session_stop_time, user_id as session_user_id,
 };
 use crate::schema::fasting_events::dsl::{
-    fasting_events, event_start_time, event_stop_time, user_id as event_user_id,
+    fasting_events, start_time as event_start_time, stop_time as event_stop_time, user_id as event_user_id,
 };
 use chrono::{NaiveDateTime, Utc};
 use diesel::prelude::*;
@@ -43,7 +43,7 @@ pub fn get_fasting_sessions(
     user_id: i32,
 ) -> Result<Vec<FastingSession>, FastingAppError> {
     fasting_sessions
-        .filter(session_user_id.eq(user_id))
+        .filter(session_user_id.eq(user_id)) // Use alias for user_id
         .select(FastingSession::as_select()) // Explicitly select fields for FastingSession struct
         .load::<FastingSession>(conn)
         .map_err(FastingAppError::DatabaseError)
@@ -98,7 +98,7 @@ fn get_fasting_events_with_end_time(
     user_id: i32,
 ) -> Result<Vec<FastingEvent>, FastingAppError> {
     fasting_events
-        .filter(event_user_id.eq(user_id))
+        .filter(event_user_id.eq(user_id)) // Use alias for user_id
         .filter(event_stop_time.is_not_null()) // Ensure stop_time is not null
         .load::<FastingEvent>(conn)
         .map_err(FastingAppError::DatabaseError)
