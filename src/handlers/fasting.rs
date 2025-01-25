@@ -33,7 +33,7 @@ pub fn stop_fasting(
     user_id: i32,
     event_end_time: chrono::NaiveDateTime,
 ) -> Result<(), FastingAppError> {
-    use diesel::dsl::{update};
+    use diesel::dsl::update;
 
     let ongoing_event = fasting_events
         .filter(schema_user_id.eq(user_id))
@@ -46,12 +46,15 @@ pub fn stop_fasting(
         update(fasting_events.find(event.id))
             .set(stop_time.eq(Some(event_end_time)))
             .execute(conn)
-            .map(|_| ())
-            .map_err(FastingAppError::DatabaseError)
+            .map(|_| ()) // Return unit if successful
+            .map_err(FastingAppError::DatabaseError) // Map Diesel errors to DatabaseError
     } else {
-        Err(FastingAppError::Custom("No ongoing fasting session found.".into()))
+        Err(FastingAppError::SessionError(
+            "No ongoing fasting session found.".to_string(),
+        ))
     }
 }
+
 
 /// Retrieves the current fasting status for a user.
 pub fn get_current_fasting_status(
