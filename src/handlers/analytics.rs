@@ -10,8 +10,6 @@ use chrono::{NaiveDateTime, Utc};
 use diesel::prelude::*;
 use diesel::SqliteConnection;
 
-const CHECKPOINTS: [i64; 9] = [4, 12, 14, 16, 18, 24, 36, 48, 72]; // Checkpoints in hours
-
 /// Retrieves and displays the user's fasting history.
 pub fn show_fasting_history(conn: &mut SqliteConnection, user_id: i32) {
     match get_fasting_sessions(conn, user_id) {
@@ -43,8 +41,8 @@ pub fn get_fasting_sessions(
     user_id: i32,
 ) -> Result<Vec<FastingSession>, FastingAppError> {
     fasting_sessions
-        .filter(session_user_id.eq(user_id)) // Use alias for user_id
-        .select(FastingSession::as_select()) // Explicitly select fields for FastingSession struct
+        .filter(session_user_id.eq(user_id)) // Explicit alias
+        .select(FastingSession::as_select()) // Explicit struct mapping
         .load::<FastingSession>(conn)
         .map_err(FastingAppError::DatabaseError)
 }
@@ -98,7 +96,7 @@ fn get_fasting_events_with_end_time(
     user_id: i32,
 ) -> Result<Vec<FastingEvent>, FastingAppError> {
     fasting_events
-        .filter(event_user_id.eq(user_id)) // Use alias for user_id
+        .filter(event_user_id.eq(user_id)) // Explicit alias
         .filter(event_stop_time.is_not_null()) // Ensure stop_time is not null
         .load::<FastingEvent>(conn)
         .map_err(FastingAppError::DatabaseError)
