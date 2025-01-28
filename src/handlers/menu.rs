@@ -41,15 +41,17 @@ pub fn handle_fasting_menu(conn: &mut SqliteConnection) {
 
         match prompt_user_choice("Enter your choice (1-5): ") {
             Some(1) => {
-                let event_start_time = Utc::now().naive_utc();
-                match start_fasting(conn, user_id, event_start_time) {
-                    Ok(_) => println!("Fasting session started successfully."),
-                    Err(e) => eprintln!("Error starting fasting session: {}", e),
+                let user_id = prompt_user_id();
+                if let Err(e) = start_fasting(conn, user_id, chrono::Utc::now().naive_utc()) {
+                    eprintln!("Error starting fasting session: {}", e);
                 }
             }
-            Some(2) => match stop_fasting(conn, user_id) {
-                Ok(_) => println!("Fasting session stopped successfully."),
-                Err(e) => eprintln!("Error stopping fasting session: {}", e),
+            Some(2) => {
+                let user_id = prompt_user_id();
+                match stop_fasting(conn, user_id, chrono::Utc::now().naive_utc()) {
+                    Ok(_) => println!("Fasting session stopped successfully."),
+                    Err(e) => eprintln!("Error stopping fasting session: {}", e),
+                }
             },
             Some(3) => match get_current_fasting_status(conn, user_id) {
                 Ok(Some((start_time, duration))) => println!(
