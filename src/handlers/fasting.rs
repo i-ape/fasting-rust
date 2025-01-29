@@ -42,17 +42,17 @@ pub fn stop_fasting(
         .optional()
         .map_err(FastingAppError::DatabaseError)?;
 
-    if let Some(event) = ongoing_event {
-        update(fasting_events.find(event.id))
-            .set(stop_time.eq(Some(event_end_time)))
-            .execute(conn)
-            .map(|_| ()) // Return unit if successful
-            .map_err(FastingAppError::DatabaseError) // Map Diesel errors to DatabaseError
-    } else {
-        Err(FastingAppError::SessionError(
-            "No ongoing fasting session found.".to_string(),
-        ))
-    }
+        if let Some(event) = ongoing_event {
+            update(fasting_events.find(event.id))
+                .set(stop_time.eq(Some(event_end_time)))
+                .execute(conn)
+                .map(|_| ())
+                .map_err(FastingAppError::DatabaseError)
+        } else {
+            Err(FastingAppError::SessionError(
+                "No ongoing fasting session found.".to_string(),
+            ))
+        }   
 }
 
 

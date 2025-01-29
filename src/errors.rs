@@ -17,6 +17,6 @@ pub enum FastingAppError {
     ConnectionError(String),
     #[error("Custom error: {0}")]
     Custom(String),
-    #[error("Invalid username or password.")]
-    InvalidCredentials,
+    #[error("No ongoing fasting session found.")]
+    SessionError(String),
 }
