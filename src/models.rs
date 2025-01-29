@@ -44,11 +44,11 @@ pub struct NewFastingEvent {
 }
 
 /// Represents a fasting goal in the database.
-#[derive(Queryable, Insertable, Debug)]
+#[derive(Queryable, Insertable, Identifiable, Debug, Selectable)]
 #[diesel(table_name = fasting_goals)]
 pub struct FastingGoal {
-    pub id: i32,                           // Non-nullable<Integer>
-    pub user_id: i32,                      // Integer (foreign key)
+    pub id: Option<i32>,                   // Nullable<Integer> 
+    pub user_id: i32,                      // Integer
     pub goal_duration: i32,                // Integer
     pub deadline: NaiveDateTime,           // Timestamp
     pub created_at: Option<NaiveDateTime>, // Nullable<Timestamp>
