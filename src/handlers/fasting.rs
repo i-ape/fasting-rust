@@ -1,6 +1,8 @@
 use crate::errors::FastingAppError;
 use crate::models::FastingEvent;
-use crate::schema::fasting_events::dsl::{fasting_events, start_time, stop_time, user_id as schema_user_id};
+use crate::schema::fasting_events::dsl::{
+    fasting_events, start_time, stop_time, user_id as schema_user_id,
+};
 use chrono::Utc;
 use diesel::prelude::*;
 use diesel::SqliteConnection;
@@ -37,24 +39,23 @@ pub fn stop_fasting(
 
     let ongoing_event = fasting_events
         .filter(schema_user_id.eq(user_id))
-        .filter(stop_time.is_null()) // Find ongoing fasting event
+        .filter(stop_time.is_null())
         .first::<FastingEvent>(conn)
         .optional()
         .map_err(FastingAppError::DatabaseError)?;
 
-        if let Some(event) = ongoing_event {
-            update(fasting_events.find(event.id))
-                .set(stop_time.eq(Some(event_end_time)))
-                .execute(conn)
-                .map(|_| ())
-                .map_err(FastingAppError::DatabaseError)
-        } else {
-            Err(FastingAppError::SessionError(
-                "No ongoing fasting session found.".to_string(),
-            ))
-        }   
+    if let Some(event) = ongoing_event {
+        update(fasting_events.find(event.id))
+            .set(stop_time.eq(Some(event_end_time)))
+            .execute(conn)
+            .map(|_| ())
+            .map_err(FastingAppError::DatabaseError)
+    } else {
+        Err(FastingAppError::SessionError(
+            "No ongoing fasting session found.".to_string(),
+        ))
+    }
 }
-
 
 /// Retrieves the current fasting status for a user.
 pub fn get_current_fasting_status(
