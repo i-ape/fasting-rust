@@ -1,9 +1,0 @@
-DROP TABLE IF EXISTS fasting_events;
-
-CREATE TABLE fasting_events (
-    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    user_id INTEGER NOT NULL,
-    start_time TIMESTAMP NOT NULL,
-    stop_time TIMESTAMP NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
