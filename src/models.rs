@@ -66,9 +66,9 @@ pub struct NewFastingGoal {
 #[derive(Queryable, Identifiable, Debug, Selectable)]
 #[diesel(table_name = fasting_sessions)]
 pub struct FastingSession {
-    pub id: Option<i32>,                   // Non-nullable<Integer>
-    pub user_id: i32,                      // Integer (foreign key)
-    pub start_time: NaiveDateTime,         // Timestamp
-    pub stop_time: Option<NaiveDateTime>,  // Nullable<Timestamp>
-    pub created_at: Option<NaiveDateTime>, // Nullable<Timestamp>
+    pub id: i32,                        // Non-nullable<Integer>
+    pub user_id: i32,                   // Integer
+    pub start_time: NaiveDateTime,      // Timestamp
+    pub stop_time: Option<NaiveDateTime>, // Nullable<Timestamp>
+    pub created_at: Option<NaiveDateTime>,
 }
