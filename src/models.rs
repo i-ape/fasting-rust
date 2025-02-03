@@ -25,12 +25,13 @@ pub struct NewUser {
 /// Represents a fasting event in the database.
 #[derive(Queryable, Insertable, Identifiable, Debug, Selectable)]
 #[diesel(table_name = fasting_events)]
+#[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 pub struct FastingEvent {
-    pub id: Option<i32>,                   // Nullable<Integer>
-    pub user_id: i32,                      // Integer
-    pub start_time: NaiveDateTime,         // Timestamp
-    pub stop_time: Option<NaiveDateTime>,  // Nullable<Timestamp>
-    pub created_at: Option<NaiveDateTime>, // Nullable<Timestamp>
+    pub id: i32,                           // Non-nullable Integer
+    pub user_id: i32,
+    pub start_time: NaiveDateTime,
+    pub stop_time: Option<NaiveDateTime>,
+    pub created_at: Option<NaiveDateTime>,
 }
 
 /// Represents a new fasting event to be inserted into the database.
