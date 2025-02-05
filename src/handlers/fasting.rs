@@ -46,23 +46,18 @@ pub fn stop_fasting(
         .map_err(FastingAppError::DatabaseError)?;
 
     if let Some(event) = ongoing_event {
-        if let Some(id) = event.id {
-            update(fasting_events.find(id))
-                .set(stop_time.eq(Some(event_end_time)))
-                .execute(conn)
-                .map(|_| ())
-                .map_err(FastingAppError::DatabaseError)
-        } else {
-            Err(FastingAppError::SessionError(
-                "Invalid event ID.".to_string(),
-            ))
-        }
+        update(fasting_events.find(event.id))
+            .set(stop_time.eq(Some(event_end_time)))
+            .execute(conn)
+            .map(|_| ())
+            .map_err(FastingAppError::DatabaseError)
     } else {
         Err(FastingAppError::SessionError(
             "No ongoing fasting session found.".to_string(),
         ))
     }
 }
+
 /// Retrieves the current fasting status for a user.
 pub fn get_current_fasting_status(
     conn: &mut SqliteConnection,
@@ -89,7 +84,7 @@ pub fn get_user_fasting_sessions(
     user_id: i32,
 ) -> Result<Vec<FastingSession>, FastingAppError> {
     fasting_sessions
-        .filter(schema_user_id.eq(user_id))
+        .filter(session_user_id.eq(user_id))
         .select(FastingSession::as_select())
         .load::<FastingSession>(conn)
         .map_err(FastingAppError::DatabaseError)
