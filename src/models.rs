@@ -1,7 +1,8 @@
-use diesel::prelude::*;
 use diesel::{Insertable, Queryable, Identifiable, AsChangeset, Selectable};
 use crate::schema::{fasting_events, fasting_goals, fasting_sessions, users};
 use chrono::NaiveDateTime;
+use diesel::prelude::*;
+
 
 /// Represents a user in the database.
 #[derive(Queryable, Insertable, AsChangeset, Identifiable, Selectable, Debug)]
