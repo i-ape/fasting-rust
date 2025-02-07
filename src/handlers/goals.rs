@@ -3,26 +3,21 @@ use crate::models::FastingGoal;
 use crate::schema::fasting_goals::dsl::*;
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
+use std::io::{self, Write};
 
 /// Adds a new fasting goal for the user.
 pub fn add_goal(user_id_param: i32, conn: &mut SqliteConnection) -> Result<(), FastingAppError> {
-    println!("Enter the goal duration in hours:");
-    let mut duration_input = String::new();
-    std::io::stdin().read_line(&mut duration_input).expect("Failed to read input");
-
+    let duration_input = prompt_user_input("Enter the goal duration in hours: ")?;
     let parsed_duration: i32 = duration_input.trim().parse().map_err(|_| {
         FastingAppError::InvalidRequest("Invalid duration entered.".to_string())
     })?;
 
-    println!("Enter the deadline for this goal (YYYY-MM-DD HH:MM):");
-    let mut deadline_input = String::new();
-    std::io::stdin().read_line(&mut deadline_input).expect("Failed to read input");
-
+    let deadline_input = prompt_user_input("Enter the deadline (YYYY-MM-DD HH:MM): ")?;
     let goal_deadline = NaiveDateTime::parse_from_str(deadline_input.trim(), "%Y-%m-%d %H:%M")
-        .map_err(|_| FastingAppError::InvalidRequest("Invalid deadline entered.".to_string()))?;
+        .map_err(|_| FastingAppError::InvalidRequest("Invalid deadline format.".to_string()))?;
 
     let new_goal = FastingGoal {
-        id: None, // SQLite will auto-generate this if set to `None`
+        id: None,
         user_id: user_id_param,
         goal_duration: parsed_duration,
         deadline: goal_deadline,
@@ -55,9 +50,21 @@ pub fn view_goals(user_id_param: i32, conn: &mut SqliteConnection) -> Result<(),
                 "Goal: {} hours, Deadline: {}, Created At: {}",
                 goal.goal_duration,
                 goal.deadline,
-                goal.created_at.map(|ts| ts.to_string()).unwrap_or("Unknown".to_string())
+                goal.created_at
+                    .map(|ts| ts.to_string())
+                    .unwrap_or_else(|| "Unknown".to_string())
             );
         }
     }
     Ok(())
+}
+
+/// Prompts the user for input and returns the result.
+fn prompt_user_input(message: &str) -> Result<String, FastingAppError> {
+    print!("{}", message);
+    io::stdout().flush().map_err(|_| FastingAppError::InvalidRequest("Failed to flush stdout.".to_string()))?;
+
+    let mut input = String::new();
+    io::stdin().read_line(&mut input).map_err(|_| FastingAppError::InvalidRequest("Failed to read input.".to_string()))?;
+    Ok(input)
 }
