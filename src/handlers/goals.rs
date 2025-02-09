@@ -8,12 +8,12 @@ use std::io::{self, Write};
 /// Adds a new fasting goal for the user.
 pub fn add_goal(user_id_param: i32, conn: &mut SqliteConnection) -> Result<(), FastingAppError> {
     let duration_input = prompt_user_input("Enter the goal duration in hours: ")?;
-    let parsed_duration: i32 = duration_input.trim().parse().map_err(|_| {
+    let parsed_duration: i32 = duration_input.parse().map_err(|_| {
         FastingAppError::InvalidRequest("Invalid duration entered.".to_string())
     })?;
 
     let deadline_input = prompt_user_input("Enter the deadline (YYYY-MM-DD HH:MM): ")?;
-    let goal_deadline = NaiveDateTime::parse_from_str(deadline_input.trim(), "%Y-%m-%d %H:%M")
+    let goal_deadline = NaiveDateTime::parse_from_str(&deadline_input, "%Y-%m-%d %H:%M")
         .map_err(|_| FastingAppError::InvalidRequest("Invalid deadline format.".to_string()))?;
 
     let new_goal = FastingGoal {
@@ -57,14 +57,4 @@ pub fn view_goals(user_id_param: i32, conn: &mut SqliteConnection) -> Result<(),
         }
     }
     Ok(())
-}
-
-/// Prompts the user for input and returns the result.
-fn prompt_user_input(message: &str) -> Result<String, FastingAppError> {
-    print!("{}", message);
-    io::stdout().flush().map_err(|_| FastingAppError::InvalidRequest("Failed to flush stdout.".to_string()))?;
-
-    let mut input = String::new();
-    io::stdin().read_line(&mut input).map_err(|_| FastingAppError::InvalidRequest("Failed to read input.".to_string()))?;
-    Ok(input)
 }

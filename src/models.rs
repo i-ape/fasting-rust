@@ -48,8 +48,9 @@ pub struct NewFastingEvent {
 }
 
 /// Represents a fasting goal in the database.
-#[derive(Queryable, Insertable, Selectable, Identifiable, Debug)]
+#[derive(Queryable, Selectable, Identifiable, Insertable, Debug)]
 #[diesel(table_name = fasting_goals)]
+#[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 pub struct FastingGoal {
     pub id: Option<i32>,
     pub user_id: i32,
