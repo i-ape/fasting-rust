@@ -58,3 +58,13 @@ pub fn view_goals(user_id_param: i32, conn: &mut SqliteConnection) -> Result<(),
     }
     Ok(())
 }
+
+/// Prompts the user for input and returns the result.
+fn prompt_user_input(message: &str) -> Result<String, FastingAppError> {
+    print!("{}", message);
+    io::stdout().flush().map_err(|_| FastingAppError::InvalidRequest("Failed to flush stdout.".to_string()))?;
+
+    let mut input = String::new();
+    io::stdin().read_line(&mut input).map_err(|_| FastingAppError::InvalidRequest("Failed to read input.".to_string()))?;
+    Ok(input.trim().to_string())
+}
