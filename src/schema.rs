@@ -41,7 +41,6 @@ diesel::table! {
 }
 
 diesel::joinable!(fasting_events -> users (user_id));
-diesel::joinable!(fasting_goals -> users (user_id));
 diesel::joinable!(fasting_sessions -> users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(

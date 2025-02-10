@@ -1,8 +1,9 @@
-CREATE TABLE IF NOT EXISTS fasting_goals (
+DROP TABLE IF EXISTS fasting_goals;
+
+CREATE TABLE fasting_goals (
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     user_id INTEGER NOT NULL,
     goal_duration INTEGER NOT NULL,
     deadline TIMESTAMP NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users (id)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

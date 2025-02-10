@@ -52,7 +52,7 @@ pub struct NewFastingEvent {
 #[diesel(table_name = fasting_goals)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 pub struct FastingGoal {
-    pub id: Option<i32>,
+    pub id: i32,                            // Non-nullable Integer to match schema
     pub user_id: i32,
     pub goal_duration: i32,
     pub deadline: NaiveDateTime,
