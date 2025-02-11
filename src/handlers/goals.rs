@@ -1,5 +1,6 @@
 use crate::errors::FastingAppError;
 use crate::models::FastingGoal;
+use crate::models::NewFastingGoal;
 use crate::schema::fasting_goals::dsl::*;
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
@@ -16,8 +17,7 @@ pub fn add_goal(user_id_param: i32, conn: &mut SqliteConnection) -> Result<(), F
     let goal_deadline = NaiveDateTime::parse_from_str(&deadline_input, "%Y-%m-%d %H:%M")
         .map_err(|_| FastingAppError::InvalidRequest("Invalid deadline format.".to_string()))?;
 
-    let new_goal = FastingGoal {
-        id: None,
+    let new_goal = NewFastingGoal {
         user_id: user_id_param,
         goal_duration: parsed_duration,
         deadline: goal_deadline,
