@@ -1,9 +1,9 @@
 use crate::errors::FastingAppError;
 use crate::models::{FastingEvent, FastingSession};
-use crate::schema::fasting_sessions::dsl::{fasting_sessions, user_id as session_user_id};
 use crate::schema::fasting_events::dsl::{
     fasting_events, stop_time as event_stop_time, user_id as event_user_id,
 };
+use crate::schema::fasting_sessions::dsl::{fasting_sessions, user_id as session_user_id};
 use chrono::Utc;
 use diesel::prelude::*;
 use diesel::SqliteConnection;
@@ -12,7 +12,7 @@ use diesel::SqliteConnection;
 pub fn show_fasting_history(conn: &mut SqliteConnection, user_id: i32) {
     match get_fasting_sessions(conn, user_id) {
         Ok(sessions) => {
-            println!("Fasting History:");
+            println!("\nFasting History:");
             if sessions.is_empty() {
                 println!("No fasting history found for user ID: {}", user_id);
             } else {
@@ -29,7 +29,7 @@ pub fn show_fasting_history(conn: &mut SqliteConnection, user_id: i32) {
                 }
             }
         }
-        Err(e) => eprintln!("Error fetching fasting history: {:?}", e),
+        Err(e) => eprintln!("\nError fetching fasting history: {}", e),
     }
 }
 
@@ -65,7 +65,13 @@ pub fn calculate_average_fasting_duration(
         })
         .sum();
 
-    let average_duration = total_duration / events.len() as i64;
+    let event_count = events.len() as i64;
+
+    if event_count == 0 {
+        return Ok(None); // Avoid division by zero
+    }
+
+    let average_duration = total_duration / event_count;
     Ok(Some(average_duration))
 }
 
@@ -96,6 +102,7 @@ fn get_fasting_events_with_end_time(
     fasting_events
         .filter(event_user_id.eq(user_id))
         .filter(event_stop_time.is_not_null())
+        .select(FastingEvent::as_select()) // Explicitly map fields to struct
         .load::<FastingEvent>(conn)
         .map_err(FastingAppError::DatabaseError)
 }
