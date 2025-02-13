@@ -38,3 +38,5 @@ this is my tree, i recently altered main alot to make it a node rather than the 
 
 integrated login functions into main, tomorrow hopefully I can get the rest of the user folder to function through main
 next i will try to slim down main so it only works as a center rather than a function point
+
+coming together, testy branches should update, the flow I need to find out how to go from CLI to figma ui for phone
