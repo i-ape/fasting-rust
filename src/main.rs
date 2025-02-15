@@ -6,7 +6,7 @@ use dotenv::dotenv;
 //use log;
 
 use crate::db::establish_connection;
-use crate::errors::handle_error;
+use crate::errors::FastingAppError;
 use crate::handlers::menu::display_main_menu;
 
 mod db;
@@ -26,7 +26,7 @@ fn main() {
         Ok(connection) => connection,
         Err(e) => {
             log::error!("Failed to establish connection: {:?}", e);
-            handle_error(e);
+            FastingAppError(e);
             return;
         }
     };
