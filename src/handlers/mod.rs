@@ -3,6 +3,7 @@ pub mod fasting;
 pub mod goals;
 pub mod menu;
 
+// Ensure all necessary functions are accessible from handlers
 pub use analytics::{
     calculate_average_fasting_duration, 
     calculate_total_fasting_time, 
@@ -19,3 +20,5 @@ pub use goals::{
     add_goal,
     view_goals,
 };
+
+pub use menu::display_main_menu;
