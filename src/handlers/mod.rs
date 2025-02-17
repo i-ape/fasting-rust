@@ -7,3 +7,4 @@ pub use analytics::*;
 pub use fasting::*;
 pub use goals::*;
 pub use menu::*;
+pub use crate::errors::FastingAppError;

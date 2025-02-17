@@ -17,8 +17,9 @@ pub fn login_user(
     if verify(password_input, &user.hashed_password).map_err(FastingAppError::PasswordHashError)? {
         Ok(user)
     } else {
-        Err(FastingAppError::InvalidCredentials)
+        Err(FastingAppError::InvalidCredentials) // ✅ Keep this
     }
+    
 }
 
 /// Finds a user by their device ID.
@@ -32,7 +33,7 @@ pub fn find_user_by_device_id(
         .first::<User>(conn)
         .optional()
         .map_err(FastingAppError::DatabaseError)?
-        .ok_or(FastingAppError::InvalidCredentials)
+        .ok_or_else(|| FastingAppError::InvalidCredentials)
 }
 
 /// Associates a device ID with a user account.
