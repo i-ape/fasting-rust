@@ -14,8 +14,8 @@ pub enum FastingAppError {
     PasswordHashError(#[from] BcryptError),
 
     /// Represents an attempt to start a fasting session when one is already active.
-    #[error("An existing fasting session is already active.")]
-    ExistingSessionError,
+    #[error("An existing fasting session is already active for user {0}.")]
+    ExistingSessionError(i32),
 
     /// Represents a generic invalid request.
     #[error("Invalid request: {0}")]
@@ -30,8 +30,8 @@ pub enum FastingAppError {
     Custom(String),
 
     /// Represents an error when login credentials are invalid.
-    #[error("Invalid username or password.")]
-    InvalidCredentials,
+    #[error("Invalid username or password for user: {0}.")]
+    InvalidCredentials(String),  // ✅ Stores username
 
     /// Represents an error related to session handling.
     #[error("Session error: {0}")]
