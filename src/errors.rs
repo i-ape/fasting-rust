@@ -39,17 +39,16 @@ pub enum FastingAppError {
 }
 
 impl FastingAppError {
-    /// ✅ **Creates an `InvalidCredentials` error with a given username or device ID.**
     pub fn invalid_credentials<T: Into<String>>(identifier: T) -> Self {
         FastingAppError::InvalidCredentials(identifier.into())
     }
-
-    /// ✅ **Converts the error into a user-friendly message.**
     pub fn user_friendly_message(&self) -> String {
         match self {
             FastingAppError::DatabaseError(_) => "Database operation failed.".to_string(),
             FastingAppError::PasswordHashError(_) => "Password hashing error.".to_string(),
-            FastingAppError::ExistingSessionError => "You already have an active session.".to_string(),
+            FastingAppError::ExistingSessionError(user_id) => {  // ✅ Match tuple variant properly
+                format!("User {} already has an active session.", user_id)
+            }
             FastingAppError::InvalidRequest(msg) => format!("Invalid request: {}", msg),
             FastingAppError::ConnectionError(_) => "Failed to connect to the database.".to_string(),
             FastingAppError::Custom(msg) => format!("Error: {}", msg),
