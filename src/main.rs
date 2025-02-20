@@ -7,8 +7,12 @@ use dotenv::dotenv;
 
 use crate::db::establish_connection;
 use crate::errors::FastingAppError::*;
-use crate::handlers::menu::display_main_menu;
-
+use fasting_rust::{
+    start_fasting, stop_fasting, get_current_fasting_status,
+    calculate_average_fasting_duration, calculate_total_fasting_time,
+    show_fasting_history, add_goal, view_goals,
+    create_user, login_user, FastingAppError,
+};
 mod db;
 mod errors;
 mod handlers;
