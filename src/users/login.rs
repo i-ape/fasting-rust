@@ -17,7 +17,7 @@ pub fn login_user(
     if verify(password_input, &user.hashed_password).map_err(FastingAppError::PasswordHashError)? {
         Ok(user)
     } else {
-        Err(FastingAppError::InvalidCredentials(username_input.to_string())) 
+        Err(FastingAppError::InvalidCredentials(format!("Invalid login for username: {}", username_input)))
     }
 }
 
@@ -32,22 +32,20 @@ pub fn find_user_by_device_id(
         .first::<User>(conn)
         .optional()
         .map_err(FastingAppError::DatabaseError)?
-        .ok_or_else(|| FastingAppError::InvalidCredentials(device_id_input.to_string())) 
+        .ok_or_else(|| FastingAppError::InvalidCredentials(format!("Device ID '{}' not found", device_id_input)))
 }
 
 /// Associates a device ID with a user account.
 pub fn associate_device_id(
     conn: &mut SqliteConnection,
-    user_id: i32,
+    user_id_input: i32,
     device_id_input: &str,
 ) -> Result<usize, FastingAppError> {
     if device_id_input.is_empty() {
-        return Err(FastingAppError::InvalidRequest(
-            "Device ID cannot be empty.".to_string(),
-        ));
+        return Err(FastingAppError::InvalidRequest("Device ID cannot be empty.".to_string()));
     }
 
-    diesel::update(users.filter(id.eq(user_id)))
+    diesel::update(users.filter(id.eq(user_id_input)))
         .set(device_id.eq(device_id_input))
         .execute(conn)
         .map_err(FastingAppError::DatabaseError)
@@ -61,17 +59,15 @@ pub fn login_user_or_device(
     device_id_input: Option<&str>,
 ) -> Result<User, FastingAppError> {
     match device_id_input {
-        Some(device_id_value) => {
-            return find_user_by_device_id(conn, device_id_value);
-        }
+        Some(device_id_value) => find_user_by_device_id(conn, device_id_value),
         None => {
             if let (Some(input_username), Some(input_password)) = (username_input, password_input) {
-                return login_user(conn, input_username, input_password);
+                login_user(conn, input_username, input_password)
+            } else {
+                Err(FastingAppError::InvalidRequest(
+                    "Must provide either a device ID or a username/password.".to_string(),
+                ))
             }
         }
     }
-
-    Err(FastingAppError::InvalidRequest(
-        "Must provide either device ID or username/password.".to_string(),
-    ))
 }
