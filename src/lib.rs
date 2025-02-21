@@ -6,7 +6,7 @@ pub mod schema;
 pub mod users;
 
 pub use handlers::{
-    fasting::{start_fasting, stop_fasting, get_current_fasting_status}, 
+    fasting::{start_fasting, stop_fasting, get_current_fasting_status, get_user_fasting_sessions}, 
     analytics::{calculate_average_fasting_duration, calculate_total_fasting_time, show_fasting_history},
     goals::{add_goal, view_goals},
 };
