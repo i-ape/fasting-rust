@@ -11,6 +11,11 @@ pub use handlers::{
     goals::{add_goal, view_goals},
 };
 
-pub use users::{create_user, login_user, register_user}; // From `users/mod.rs`
+pub use users::{
+    update::update_user_profile,
+    create::{create_user, register_user},
+    login::{login_user, find_user_by_device_id, associate_device_id, login_user_or_device}
+
+}; // From `users/mod.rs`
 
 pub use errors::FastingAppError;
