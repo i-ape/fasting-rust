@@ -18,4 +18,4 @@ pub use users::{
 
 }; // From `users/mod.rs`
 
-pub use errors::FastingAppError;
+pub use crate::errors::FastingAppError::*;
