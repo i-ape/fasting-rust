@@ -5,6 +5,7 @@ use crate::handlers::analytics::{
 };
 use crate::handlers::fasting::{start_fasting, stop_fasting, get_current_fasting_status};
 use crate::handlers::goals::add_goal;
+use crate::view_goals;
 use std::io::{self, Write};
 
 /// Displays the main menu and handles user actions.
@@ -37,9 +38,10 @@ fn handle_fasting_menu(conn: &mut SqliteConnection, user_id: i32) {
         println!("2. Stop Fasting");
         println!("3. Fasting Status");
         println!("4. Add Goal");
-        println!("5. Back to Main Menu");
+        println!("5. View Goals");  // ✅ Added "View Goals"
+        println!("6. Back to Main Menu");
 
-        match prompt_user_choice("Enter your choice (1-5): ") {
+        match prompt_user_choice("Enter your choice (1-6): ") {
             Some(1) => {
                 if let Err(e) = start_fasting(conn, user_id, Utc::now().naive_utc()) {
                     eprintln!("Error starting fasting session: {}", e);
@@ -69,11 +71,17 @@ fn handle_fasting_menu(conn: &mut SqliteConnection, user_id: i32) {
                     println!("Goal added successfully.");
                 }
             }
-            Some(5) => break,
+            Some(5) => {  // ✅ Now actually calls `view_goals`
+                if let Err(e) = view_goals(user_id, conn) {
+                    eprintln!("Error viewing goals: {}", e);
+                }
+            }
+            Some(6) => break,
             _ => println!("Invalid choice. Please select a valid option."),
         }
     }
 }
+
 
 /// Handles the analytics-related menu actions.
 fn handle_analytics_menu(conn: &mut SqliteConnection, user_id: i32) {
