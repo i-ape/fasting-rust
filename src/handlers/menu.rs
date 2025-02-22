@@ -5,7 +5,7 @@ use crate::handlers::analytics::{
 };
 use crate::handlers::fasting::{start_fasting, stop_fasting, get_current_fasting_status};
 use crate::handlers::goals::add_goal;
-use crate::view_goals;
+use crate::{get_user_fasting_sessions, view_goals};
 use std::io::{self, Write};
 
 /// Displays the main menu and handles user actions.
@@ -90,9 +90,10 @@ fn handle_analytics_menu(conn: &mut SqliteConnection, user_id: i32) {
         println!("1. Fasting History");
         println!("2. Average Fasting Duration");
         println!("3. Total Fasting Time");
-        println!("4. Back to Main Menu");
+        println!("4. View All Fasting Sessions"); // ✅ New Option
+        println!("5. Back to Main Menu");
 
-        match prompt_user_choice("Enter your choice (1-4): ") {
+        match prompt_user_choice("Enter your choice (1-5): ") {
             Some(1) => show_fasting_history(conn, user_id),
             Some(2) => match calculate_average_fasting_duration(conn, user_id) {
                 Ok(Some(avg)) => println!("Average Fasting Duration: {} minutes.", avg),
@@ -103,7 +104,26 @@ fn handle_analytics_menu(conn: &mut SqliteConnection, user_id: i32) {
                 Ok(total) => println!("Total Fasting Time: {} minutes.", total),
                 Err(e) => eprintln!("Error calculating total fasting time: {}", e),
             },
-            Some(4) => break,
+            Some(4) => {  // ✅ New call to `get_user_fasting_sessions`
+                match get_user_fasting_sessions(conn, user_id) {
+                    Ok(sessions) => {
+                        if sessions.is_empty() {
+                            println!("No fasting sessions found for user {}.", user_id);
+                        } else {
+                            println!("Fasting sessions for user {}:", user_id);
+                            for session in sessions {
+                                println!(
+                                    "- Start: {}, End: {:?}",
+                                    session.start_time,
+                                    session.stop_time.unwrap_or_else(|| Utc::now().naive_utc())
+                                );
+                            }
+                        }
+                    }
+                    Err(e) => eprintln!("Error retrieving fasting sessions: {}", e),
+                }
+            }
+            Some(5) => break,
             _ => println!("Invalid choice. Please select a valid option."),
         }
     }

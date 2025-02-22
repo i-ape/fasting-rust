@@ -8,11 +8,13 @@ use chrono::Utc;
 use diesel::prelude::*;
 use diesel::SqliteConnection;
 
+use super::get_user_fasting_sessions;
+
 /// Retrieves and displays the user's fasting history.
 pub fn show_fasting_history(conn: &mut SqliteConnection, user_id: i32) {
-    match get_fasting_sessions(conn, user_id) {
+    match get_user_fasting_sessions(conn, user_id) {  // ✅ Now using the function
         Ok(sessions) => {
-            println!("\nFasting History:");
+            println!("Fasting History:");
             if sessions.is_empty() {
                 println!("No fasting history found for user ID: {}", user_id);
             } else {
@@ -22,14 +24,13 @@ pub fn show_fasting_history(conn: &mut SqliteConnection, user_id: i32) {
                     println!(
                         "- Start: {}, End: {}, Duration: {} minutes",
                         session.start_time,
-                        session.stop_time
-                            .map_or_else(|| "Ongoing".to_string(), |end| end.to_string()),
+                        session.stop_time.map_or_else(|| "Ongoing".to_string(), |end| end.to_string()),
                         duration.num_minutes()
                     );
                 }
             }
         }
-        Err(e) => eprintln!("\nError fetching fasting history: {}", e),
+        Err(e) => eprintln!("Error fetching fasting history: {:?}", e),
     }
 }
 
