@@ -1,13 +1,17 @@
 use chrono::Utc;
 use diesel::SqliteConnection;
-use crate::handlers::analytics::{
-    show_fasting_history, calculate_average_fasting_duration, calculate_total_fasting_time,
-};
-use crate::handlers::fasting::{start_fasting, stop_fasting, get_current_fasting_status};
-use crate::handlers::goals::add_goal;
-use crate::{get_user_fasting_sessions, view_goals};
 use std::io::{self, Write};
 
+// Import functions from their respective modules
+use crate::handlers::fasting::{
+    get_current_fasting_status, start_fasting, stop_fasting, get_user_fasting_sessions,
+};
+use crate::handlers::analytics::{
+    calculate_average_fasting_duration, calculate_total_fasting_time, show_fasting_history,
+};
+use crate::handlers::goals::{add_goal, view_goals};
+
+/// Displays the main menu and handles user actions.
 /// Displays the main menu and handles user actions.
 pub fn display_main_menu(conn: &mut SqliteConnection) {
     let user_id = prompt_user_id(); // Prompt once for user ID
@@ -29,6 +33,7 @@ pub fn display_main_menu(conn: &mut SqliteConnection) {
         }
     }
 }
+
 
 /// Handles the fasting-related menu actions.
 fn handle_fasting_menu(conn: &mut SqliteConnection, user_id: i32) {
