@@ -2,7 +2,6 @@ use chrono::Utc;
 use diesel::SqliteConnection;
 use std::io::{self, Write};
 
-// Import functions from their respective modules
 use crate::handlers::fasting::{
     get_current_fasting_status, start_fasting, stop_fasting, get_user_fasting_sessions,
 };
@@ -12,9 +11,8 @@ use crate::handlers::analytics::{
 use crate::handlers::goals::{add_goal, view_goals};
 
 /// Displays the main menu and handles user actions.
-/// Displays the main menu and handles user actions.
 pub fn display_main_menu(conn: &mut SqliteConnection) {
-    let user_id = prompt_user_id(); // Prompt once for user ID
+    let user_id = prompt_user_id(); // ✅ Prompt once for user ID
 
     loop {
         println!("\nMain Menu:");
@@ -29,11 +27,10 @@ pub fn display_main_menu(conn: &mut SqliteConnection) {
                 println!("Exiting... Goodbye!");
                 break;
             }
-            _ => println!("Invalid choice. Please select a valid option (1-3)."),
+            _ => println!("Invalid choice. Please select a valid option."),
         }
     }
 }
-
 
 /// Handles the fasting-related menu actions.
 fn handle_fasting_menu(conn: &mut SqliteConnection, user_id: i32) {
@@ -43,7 +40,7 @@ fn handle_fasting_menu(conn: &mut SqliteConnection, user_id: i32) {
         println!("2. Stop Fasting");
         println!("3. Fasting Status");
         println!("4. Add Goal");
-        println!("5. View Goals");  // ✅ Added "View Goals"
+        println!("5. View Goals");
         println!("6. Back to Main Menu");
 
         match prompt_user_choice("Enter your choice (1-6): ") {
@@ -76,7 +73,7 @@ fn handle_fasting_menu(conn: &mut SqliteConnection, user_id: i32) {
                     println!("Goal added successfully.");
                 }
             }
-            Some(5) => {  // ✅ Now actually calls `view_goals`
+            Some(5) => {
                 if let Err(e) = view_goals(user_id, conn) {
                     eprintln!("Error viewing goals: {}", e);
                 }
@@ -87,7 +84,6 @@ fn handle_fasting_menu(conn: &mut SqliteConnection, user_id: i32) {
     }
 }
 
-
 /// Handles the analytics-related menu actions.
 fn handle_analytics_menu(conn: &mut SqliteConnection, user_id: i32) {
     loop {
@@ -95,7 +91,7 @@ fn handle_analytics_menu(conn: &mut SqliteConnection, user_id: i32) {
         println!("1. Fasting History");
         println!("2. Average Fasting Duration");
         println!("3. Total Fasting Time");
-        println!("4. View All Fasting Sessions"); // ✅ New Option
+        println!("4. View All Fasting Sessions");
         println!("5. Back to Main Menu");
 
         match prompt_user_choice("Enter your choice (1-5): ") {
@@ -109,25 +105,23 @@ fn handle_analytics_menu(conn: &mut SqliteConnection, user_id: i32) {
                 Ok(total) => println!("Total Fasting Time: {} minutes.", total),
                 Err(e) => eprintln!("Error calculating total fasting time: {}", e),
             },
-            Some(4) => {  // ✅ New call to `get_user_fasting_sessions`
-                match get_user_fasting_sessions(conn, user_id) {
-                    Ok(sessions) => {
-                        if sessions.is_empty() {
-                            println!("No fasting sessions found for user {}.", user_id);
-                        } else {
-                            println!("Fasting sessions for user {}:", user_id);
-                            for session in sessions {
-                                println!(
-                                    "- Start: {}, End: {:?}",
-                                    session.start_time,
-                                    session.stop_time.unwrap_or_else(|| Utc::now().naive_utc())
-                                );
-                            }
+            Some(4) => match get_user_fasting_sessions(conn, user_id) {
+                Ok(sessions) => {
+                    if sessions.is_empty() {
+                        println!("No fasting sessions found for user {}.", user_id);
+                    } else {
+                        println!("Fasting sessions for user {}:", user_id);
+                        for session in sessions {
+                            println!(
+                                "- Start: {}, End: {:?}",
+                                session.start_time,
+                                session.stop_time.unwrap_or_else(|| Utc::now().naive_utc())
+                            );
                         }
                     }
-                    Err(e) => eprintln!("Error retrieving fasting sessions: {}", e),
                 }
-            }
+                Err(e) => eprintln!("Error retrieving fasting sessions: {}", e),
+            },
             Some(5) => break,
             _ => println!("Invalid choice. Please select a valid option."),
         }
