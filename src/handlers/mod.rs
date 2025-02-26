@@ -15,3 +15,5 @@ pub use analytics::{
     show_fasting_history
 };
 pub use goals::{add_goal, view_goals};
+
+pub use menu::display_main_menu; 
