@@ -3,16 +3,15 @@ extern crate diesel;
 extern crate dotenv;
 
 use dotenv::dotenv;
+use env_logger;
+use std::process;
 //use log;
 
 use crate::db::establish_connection;
-use crate::errors::FastingAppError::*;
-pub use handlers::{
-    fasting::{start_fasting, stop_fasting, get_current_fasting_status}, 
-    analytics::{calculate_average_fasting_duration, calculate_total_fasting_time, show_fasting_history},
-    goals::{add_goal, view_goals},
-    menu::display_main_menu,
-};
+use handlers::menu::display_main_menu;
+use handlers::fasting::{start_fasting, stop_fasting, get_current_fasting_status};
+use handlers::analytics::{calculate_average_fasting_duration, calculate_total_fasting_time, show_fasting_history};
+use handlers::goals::{add_goal, view_goals};
 pub use users::{create_user, login_user, register_user};
 
 mod db;
