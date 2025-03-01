@@ -3,7 +3,6 @@ extern crate diesel;
 extern crate dotenv;
 
 use dotenv::dotenv;
-use env_logger;
 use std::process;
 //use log;
 
