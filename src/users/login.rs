@@ -1,8 +1,8 @@
 use crate::errors::FastingAppError;
 use crate::models::User;
+use crate::schema::users::dsl::*;
 use bcrypt::verify;
 use diesel::prelude::*;
-use crate::schema::users::dsl::*;
 
 /// ✅ Logs in a user by verifying their username and password.
 ///
@@ -30,8 +30,8 @@ pub fn login_user(
 }
 
 /// 🔒 Finds a user by their **device ID**.
-/// 
-/// - **PRIVATE**: Only used inside `login.rs`.
+///
+/// - had the fn of user login or device, now is a experiment.
 /// - Returns `User` if the device ID exists, otherwise returns `InvalidCredentials`
 pub fn login(
     conn: &mut SqliteConnection,
@@ -45,10 +45,12 @@ pub fn login(
             .first::<User>(conn)
             .optional()
             .map_err(FastingAppError::DatabaseError)?
-            .ok_or_else(|| FastingAppError::InvalidCredentials(format!(
-                "Device ID '{}' not found", 
-                device_id_value
-            )));
+            .ok_or_else(|| {
+                FastingAppError::InvalidCredentials(format!(
+                    "Device ID '{}' not found",
+                    device_id_value
+                ))
+            });
     }
 
     if let (Some(input_username), Some(input_password)) = (username_input, password_input) {
@@ -59,7 +61,6 @@ pub fn login(
         "Must provide either a device ID or a username/password.".to_string(),
     ))
 }
-
 
 /// ✅ Associates a **device ID** with a user account.
 ///
