@@ -8,7 +8,8 @@ use crate::schema::users::dsl::*;
 ///
 /// - Calls `find_user_by_username` to get user details.
 /// - Uses bcrypt to verify the password.
-/// - Returns `User` if login is successful, otherwise returns `InvalidCredentials`pub fn login_user(
+/// - Returns `User` if login is successful, otherwise returns `InvalidCredentials`
+pub fn login_user(
     conn: &mut SqliteConnection,
     username_input: &str,
     password_input: &str,
@@ -31,7 +32,8 @@ use crate::schema::users::dsl::*;
 /// 🔒 Finds a user by their **device ID**.
 /// 
 /// - **PRIVATE**: Only used inside `login.rs`.
-/// - Returns `User` if the device ID exists, otherwise returns `InvalidCredentials`pub fn login(
+/// - Returns `User` if the device ID exists, otherwise returns `InvalidCredentials`
+pub fn login(
     conn: &mut SqliteConnection,
     username_input: Option<&str>,
     password_input: Option<&str>,
@@ -63,7 +65,8 @@ use crate::schema::users::dsl::*;
 ///
 /// - **PUBLIC** (`pub`): Called externally when linking devices.
 /// - Ensures the device ID is not empty.
-/// - Updates the database with the new device ID.pub fn associate_device_id(
+/// - Updates the database with the new device ID.
+pub fn associate_device_id(
     conn: &mut SqliteConnection,
     user_id_input: i32,
     device_id_input: &str,
