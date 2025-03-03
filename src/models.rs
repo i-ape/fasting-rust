@@ -34,6 +34,7 @@ pub struct FastingEvent {
     pub start_time: NaiveDateTime,
     pub stop_time: Option<NaiveDateTime>,
     pub created_at: Option<NaiveDateTime>,
+    pub goal_id: Option<i32>, 
 }
 
 /// Represents a new fasting event to be inserted into the database.
