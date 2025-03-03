@@ -14,39 +14,25 @@ use diesel::SqliteConnection;
 /// - **Ensures no active fasting session already exists.**
 pub fn start_fasting(
     conn: &mut SqliteConnection,
-    user_id_input: i32,
-    goal_id_input: Option<i32>, // ✅ Optional goal
+    user_id: i32,
+    event_start_time: NaiveDateTime,
+    goal_id: Option<i32>,  // ✅ New parameter for fasting goal
 ) -> Result<(), FastingAppError> {
-    let existing_fast = fasting_events
-        .filter(user_id.eq(user_id_input))
-        .filter(stop_time.is_null()) // Ensure there's no active fast
-        .first::<FastingEvent>(conn)
-        .optional()
-        .map_err(FastingAppError::DatabaseError)?;
+    use crate::models::NewFastingEvent;
 
-    if existing_fast.is_some() {
-        return Err(FastingAppError::ExistingSessionError(format!(
-            "User {} already has an active fasting session.",
-            user_id_input
-        )));
-    }
-
-    let new_fast = FastingEvent {
-        id: None, // Auto-generated
-        user_id: user_id_input,
-        start_time: Utc::now().naive_utc(),
+    let new_event = NewFastingEvent {
+        user_id,
+        start_time: event_start_time,
         stop_time: None,
         created_at: Some(Utc::now().naive_utc()),
-        goal_id: goal_id_input, // ✅ Link to goal (or None)
+        goal_id,  // ✅ Store goal_id (if provided)
     };
 
     diesel::insert_into(fasting_events)
-        .values(&new_fast)
+        .values(&new_event)
         .execute(conn)
-        .map_err(FastingAppError::DatabaseError)?;
-
-    println!("Fasting session started for user {}.", user_id_input);
-    Ok(())
+        .map(|_| ())
+        .map_err(FastingAppError::DatabaseError)
 }
 
 /// Stops a fasting session for a user.
