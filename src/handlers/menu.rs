@@ -3,7 +3,7 @@ use diesel::SqliteConnection;
 use std::io::{self, Write};
 
 use crate::handlers::fasting::{
-    get_current_fasting_status, start_fasting, stop_fasting, get_user_fasting_sessions,
+    get_current_fasting_status, start_fasting, stop_fasting, get_user_fasting_sessions, remove_fasting_goal, update_fasting_goal
 };
 use crate::handlers::analytics::{
     calculate_average_fasting_duration, calculate_total_fasting_time, show_fasting_history,
@@ -45,7 +45,7 @@ fn handle_fasting_menu(conn: &mut SqliteConnection, user_id: i32) {
 
         match prompt_user_choice("Enter your choice (1-6): ") {
             Some(1) => {
-                if let Err(e) = start_fasting(conn, user_id, Utc::now().naive_utc()) {
+                if let Err(e) = start_fasting(conn, user_id, Utc::now().naive_utc(), goal_id) {
                     eprintln!("Error starting fasting session: {}", e);
                 } else {
                     println!("Fasting session started successfully.");
@@ -63,7 +63,7 @@ fn handle_fasting_menu(conn: &mut SqliteConnection, user_id: i32) {
                     "Fasting started at {} and has lasted for {} minutes.",
                     start_time, duration
                 ),
-                Ok(None) => println!("No active fasting session found."),
+                Ok(none) => println!("No active fasting session found."),
                 Err(e) => eprintln!("Error retrieving fasting status: {}", e),
             },
             Some(4) => {
