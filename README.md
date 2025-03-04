@@ -1,9 +1,5 @@
-Here’s an improved README.md that clearly outlines what you've built, what's in progress, and what's next.
 
-
----
-
-Fasting-Rust 🕰️🚀
+#  Fasting-Rust 🕰️🚀
 
 A fasting tracker built with Rust, using Diesel, SQLite, and bcrypt for authentication and data management.
 
