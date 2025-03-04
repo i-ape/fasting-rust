@@ -168,10 +168,3 @@ Found a bug? Submit an issue 📌
 Want to add a feature? Fork & create a PR ✨
 
 Need help? Ping me on GitHub! 🚀
-
-
-
----
-
-This README clearly documents your project’s progress, making it easier for collaborators (or future you) to jump in quickly! 🚀 Let me know if you want any adjustments!
-
