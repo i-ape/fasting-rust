@@ -98,7 +98,7 @@ fn handle_analytics_menu(conn: &mut SqliteConnection, user_id: i32) {
             Some(1) => show_fasting_history(conn, user_id),
             Some(2) => match calculate_average_fasting_duration(conn, user_id) {
                 Ok(Some(avg)) => println!("Average Fasting Duration: {} minutes.", avg),
-                Ok(None) => println!("No fasting data available."),
+                Ok(none) => println!("No fasting data available."),
                 Err(e) => eprintln!("Error calculating average fasting duration: {}", e),
             },
             Some(3) => match calculate_total_fasting_time(conn, user_id) {
