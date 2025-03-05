@@ -17,10 +17,6 @@ A **fasting tracker** built with **Rust**, using **Diesel, SQLite, and bcrypt** 
 
 ---
 
-📂 Project Structure
-
-📂 Project Structure
-
 - ├── analytics.rs         # Core analytics functions (history, streaks, etc.)
 - ├── auth.rs              # Authentication-related utilities
 - ├── db.rs                # Database connection setup
