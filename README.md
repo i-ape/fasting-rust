@@ -19,28 +19,31 @@ A **fasting tracker** built with **Rust**, using **Diesel, SQLite, and bcrypt** 
 
 📂 Project Structure
 
-├── analytics.rs       # Core analytics functions (history, streaks, etc.)
-├── auth.rs            # Authentication-related utilities
-├── db.rs              # Database connection setup
-├── errors.rs          # Custom error handling
-├── export.rs          # (Planned) Export fasting data
-├── handlers/          # Business logic handlers
-│   ├── analytics.rs   # Handles fasting analytics  
-│   ├── fasting.rs     # Manages fasting sessions  
-│   ├── mod.rs         # Module handler  
-├── lib.rs             # Main library module  
-├── main.rs            # Entry point of the application  
-├── models.rs          # Database models  
-├── notifications.rs   # (Planned) User notifications  
-├── schema.rs          # Diesel-generated schema  
-├── temp_handlers.rs   # (Temporary) Placeholder for testing features  
-├── users/             # User-related functionality  
-│   ├── create.rs      # User registration  
-│   ├── find.rs        # Find users by ID, username, or device ID  
-│   ├── login.rs       # User authentication  
-│   ├── mod.rs         # User module handler  
-│   ├── update.rs      # User profile updates  
-└── utils.rs           # (Planned) Utility functions
+📂 Project Structure
+
+├── analytics.rs         # Core analytics functions (history, streaks, etc.)
+├── auth.rs              # Authentication-related utilities
+├── db.rs                # Database connection setup
+├── errors.rs            # Custom error handling
+├── export.rs            # (Planned) Export fasting data
+├── handlers/            # Business logic handlers
+│   ├── analytics.rs     # Handles fasting analytics
+│   ├── fasting.rs       # Manages fasting sessions
+│   ├── mod.rs           # Module handler
+├── lib.rs               # Main library module
+├── main.rs              # Entry point of the application
+├── models.rs            # Database models
+├── notifications.rs     # (Planned) User notifications
+├── schema.rs            # Diesel-generated schema
+├── temp_handlers.rs     # (Temporary) Placeholder for testing features
+├── users/               # User-related functionality
+│   ├── create.rs        # User registration
+│   ├── find.rs          # Find users by ID, username, or device ID
+│   ├── login.rs         # User authentication
+│   ├── mod.rs           # User module handler
+│   ├── update.rs        # User profile updates
+└── utils.rs             # (Planned) Utility functions
+
 
 ---
 
