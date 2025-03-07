@@ -1,6 +1,7 @@
 use crate::errors::FastingAppError;
 use crate::models::{FastingEvent, FastingSession};
-use crate::schema::fasting_events::dsl::{fasting_events, stop_time, user_id as schema_user_id};
+use crate::schema::fasting_events::{self, stop_time};
+use crate::schema::fasting_events::dsl::{id as event_id, goal_id as event_goal_id};
 use crate::schema::fasting_sessions::dsl::{fasting_sessions, user_id as session_user_id};
 use chrono::{NaiveDateTime, Utc};
 use diesel::prelude::*;
@@ -16,7 +17,7 @@ pub fn start_fasting(
     conn: &mut SqliteConnection,
     user_id: i32,
     event_start_time: NaiveDateTime,
-    goal_id: Option<i32>,  // ✅ New parameter for fasting goal
+    goal_id: Option<i32>, // ✅ New parameter for fasting goal
 ) -> Result<(), FastingAppError> {
     use crate::models::NewFastingEvent;
 
@@ -25,7 +26,7 @@ pub fn start_fasting(
         start_time: event_start_time,
         stop_time: None,
         created_at: Some(Utc::now().naive_utc()),
-        goal_id,  // ✅ Store goal_id (if provided)
+        goal_id, // ✅ Store goal_id (if provided)
     };
 
     diesel::insert_into(fasting_events)
@@ -45,8 +46,8 @@ pub fn stop_fasting(
 
     let ongoing_event = find_ongoing_fasting_event(conn, user_id)?;
 
-    update(fasting_events.find(ongoing_event.id))
-        .set(stop_time.eq(Some(event_end_time)))
+    update(fasting_events::find(ongoing_event.id))
+        .set(stop_time.eq(&Some(event_end_time)))
         .execute(conn)
         .map(|_| ())
         .map_err(FastingAppError::DatabaseError)
@@ -81,16 +82,15 @@ pub fn update_fasting_goal(
     user_id_input: i32,
     new_goal_id: Option<i32>,
 ) -> Result<(), FastingAppError> {
-    let active_fast = fasting_events
-        .filter(user_id.eq(user_id_input))
+    let active_fast = fasting_events::filter(schema_user_id.eq(user_id_input))
         .filter(stop_time.is_null())
         .first::<FastingEvent>(conn)
         .optional()
         .map_err(FastingAppError::DatabaseError)?;
 
     if let Some(fast) = active_fast {
-        diesel::update(fasting_events.filter(id.eq(fast.id)))
-            .set(goal_id.eq(new_goal_id)) // ✅ Update goal
+        diesel::update(fasting_events.filter(event_id.eq(fast.id))) // ✅ Use `event_id`
+            .set(event_goal_id.eq(new_goal_id)) // ✅ Use `event_goal_id`
             .execute(conn)
             .map_err(FastingAppError::DatabaseError)?;
 
