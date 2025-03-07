@@ -7,6 +7,7 @@ diesel::table! {
         start_time -> Timestamp,
         stop_time -> Nullable<Timestamp>,
         created_at -> Nullable<Timestamp>,
+        goal_id -> Nullable<Integer>,
     }
 }
 
@@ -40,6 +41,7 @@ diesel::table! {
     }
 }
 
+diesel::joinable!(fasting_events -> fasting_goals (goal_id));
 diesel::joinable!(fasting_events -> users (user_id));
 diesel::joinable!(fasting_sessions -> users (user_id));
 

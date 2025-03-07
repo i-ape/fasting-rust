@@ -1,0 +1,1 @@
+ALTER TABLE fasting_events ADD COLUMN goal_id INTEGER NULL REFERENCES fasting_goals(id) ON DELETE SET NULL;
