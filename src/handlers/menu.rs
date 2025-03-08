@@ -45,6 +45,9 @@ fn handle_fasting_menu(conn: &mut SqliteConnection, user_id: i32) {
 
         match prompt_user_choice("Enter your choice (1-6): ") {
             Some(1) => {
+                // ✅ Prompt user for a goal ID (optional)
+                let goal_id = prompt_optional_goal_id();
+
                 if let Err(e) = start_fasting(conn, user_id, Utc::now().naive_utc(), goal_id) {
                     eprintln!("Error starting fasting session: {}", e);
                 } else {
@@ -63,7 +66,7 @@ fn handle_fasting_menu(conn: &mut SqliteConnection, user_id: i32) {
                     "Fasting started at {} and has lasted for {} minutes.",
                     start_time, duration
                 ),
-                Ok(none) => println!("No active fasting session found."),
+                Ok(None) => println!("No active fasting session found."),
                 Err(e) => eprintln!("Error retrieving fasting status: {}", e),
             },
             Some(4) => {
@@ -81,6 +84,20 @@ fn handle_fasting_menu(conn: &mut SqliteConnection, user_id: i32) {
             Some(6) => break,
             _ => println!("Invalid choice. Please select a valid option."),
         }
+    }
+}
+
+/// ✅ Prompts the user for a goal ID (Optional)
+fn prompt_optional_goal_id() -> Option<i32> {
+    print!("Enter Goal ID (or press Enter to skip): ");
+    io::stdout().flush().unwrap();
+
+    let mut input = String::new();
+    io::stdin().read_line(&mut input).unwrap();
+
+    match input.trim().parse::<i32>() {
+        Ok(id) => Some(id), // ✅ User entered a valid goal ID
+        Err(_) => None,     // ✅ User skipped (pressed Enter)
     }
 }
 
