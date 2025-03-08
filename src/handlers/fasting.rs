@@ -1,18 +1,12 @@
 use crate::errors::FastingAppError;
 use crate::models::{FastingEvent, FastingSession};
-use crate::schema::fasting_events::{self, stop_time};
-use crate::schema::fasting_events::dsl::{id as event_id, goal_id as event_goal_id};
+use crate::schema::fasting_events::dsl::{fasting_events, id as event_id, goal_id as event_goal_id, stop_time, user_id as schema_user_id};
 use crate::schema::fasting_sessions::dsl::{fasting_sessions, user_id as session_user_id};
 use chrono::{NaiveDateTime, Utc};
 use diesel::prelude::*;
 use diesel::SqliteConnection;
 
-///
-/// /// ✅ Starts fasting, with or without a goal.
-///
-/// - **If a goal exists**, it links the fast to the goal.
-/// - **If no goal is provided**, it just starts fasting normally.
-/// - **Ensures no active fasting session already exists.**
+/// ✅ Starts fasting, with or without a goal.
 pub fn start_fasting(
     conn: &mut SqliteConnection,
     user_id: i32,
@@ -29,14 +23,14 @@ pub fn start_fasting(
         goal_id, // ✅ Store goal_id (if provided)
     };
 
-    diesel::insert_into(fasting_events)
+    diesel::insert_into(fasting_events) // ✅ FIXED: Use table reference
         .values(&new_event)
         .execute(conn)
         .map(|_| ())
         .map_err(FastingAppError::DatabaseError)
 }
 
-/// Stops a fasting session for a user.
+/// ✅ Stops a fasting session for a user.
 pub fn stop_fasting(
     conn: &mut SqliteConnection,
     user_id: i32,
@@ -46,14 +40,14 @@ pub fn stop_fasting(
 
     let ongoing_event = find_ongoing_fasting_event(conn, user_id)?;
 
-    update(fasting_events::find(ongoing_event.id))
-        .set(stop_time.eq(&Some(event_end_time)))
+    update(fasting_events.filter(event_id.eq(ongoing_event.id))) // ✅ FIXED: Use filter() instead of find()
+        .set(stop_time.eq(Some(event_end_time)))
         .execute(conn)
         .map(|_| ())
         .map_err(FastingAppError::DatabaseError)
 }
 
-/// Retrieves the current fasting status for a user.
+/// ✅ Retrieves the current fasting status for a user.
 pub fn get_current_fasting_status(
     conn: &mut SqliteConnection,
     user_id: i32,
@@ -64,7 +58,7 @@ pub fn get_current_fasting_status(
     Ok(Some((ongoing_event.start_time, duration.num_minutes())))
 }
 
-/// Retrieves all fasting sessions for a user.
+/// ✅ Retrieves all fasting sessions for a user.
 pub fn get_user_fasting_sessions(
     conn: &mut SqliteConnection,
     user_id: i32,
@@ -82,15 +76,16 @@ pub fn update_fasting_goal(
     user_id_input: i32,
     new_goal_id: Option<i32>,
 ) -> Result<(), FastingAppError> {
-    let active_fast = fasting_events::filter(schema_user_id.eq(user_id_input))
+    let active_fast = fasting_events
+        .filter(schema_user_id.eq(user_id_input))
         .filter(stop_time.is_null())
         .first::<FastingEvent>(conn)
         .optional()
         .map_err(FastingAppError::DatabaseError)?;
 
     if let Some(fast) = active_fast {
-        diesel::update(fasting_events.filter(event_id.eq(fast.id))) // ✅ Use `event_id`
-            .set(event_goal_id.eq(new_goal_id)) // ✅ Use `event_goal_id`
+        diesel::update(fasting_events.filter(event_id.eq(fast.id))) 
+            .set(event_goal_id.eq(new_goal_id))
             .execute(conn)
             .map_err(FastingAppError::DatabaseError)?;
 
@@ -113,13 +108,14 @@ pub fn remove_fasting_goal(
 ) -> Result<(), FastingAppError> {
     update_fasting_goal(conn, user_id_input, None)
 }
-/// Finds an ongoing fasting event for a user.
+
+/// ✅ Finds an ongoing fasting event for a user.
 fn find_ongoing_fasting_event(
     conn: &mut SqliteConnection,
     user_id: i32,
 ) -> Result<FastingEvent, FastingAppError> {
     fasting_events
-        .filter(schema_user_id.eq(user_id))
+        .filter(schema_user_id.eq(user_id)) 
         .filter(stop_time.is_null())
         .first::<FastingEvent>(conn)
         .map_err(|_| FastingAppError::SessionError("No ongoing fasting session found.".to_string()))
