@@ -41,11 +41,12 @@ fn handle_fasting_menu(conn: &mut SqliteConnection, user_id: i32) {
         println!("3. Fasting Status");
         println!("4. Add Goal");
         println!("5. View Goals");
-        println!("6. Back to Main Menu");
+        println!("6. Update Fasting Goal");
+        println!("7. Remove Fasting Goal");
+        println!("8. Back to Main Menu");
 
-        match prompt_user_choice("Enter your choice (1-6): ") {
+        match prompt_user_choice("Enter your choice (1-8): ") {
             Some(1) => {
-                // ✅ Prompt user for a goal ID (optional)
                 let goal_id = prompt_optional_goal_id();
 
                 if let Err(e) = start_fasting(conn, user_id, Utc::now().naive_utc(), goal_id) {
@@ -81,11 +82,27 @@ fn handle_fasting_menu(conn: &mut SqliteConnection, user_id: i32) {
                     eprintln!("Error viewing goals: {}", e);
                 }
             }
-            Some(6) => break,
+            Some(6) => {  // ✅ NEW: Update fasting goal
+                let new_goal_id = prompt_optional_goal_id();
+                if let Err(e) = update_fasting_goal(conn, user_id, new_goal_id) {
+                    eprintln!("Error updating fasting goal: {}", e);
+                } else {
+                    println!("Fasting goal updated successfully.");
+                }
+            }
+            Some(7) => {  // ✅ NEW: Remove fasting goal
+                if let Err(e) = remove_fasting_goal(conn, user_id) {
+                    eprintln!("Error removing fasting goal: {}", e);
+                } else {
+                    println!("Fasting goal removed successfully.");
+                }
+            }
+            Some(8) => break,
             _ => println!("Invalid choice. Please select a valid option."),
         }
     }
 }
+
 
 /// ✅ Prompts the user for a goal ID (Optional)
 fn prompt_optional_goal_id() -> Option<i32> {
