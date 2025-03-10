@@ -2,6 +2,11 @@ use chrono::Utc;
 use diesel::SqliteConnection;
 use std::io::{self, Write};
 
+use crate::users::login::{
+    login, associate_device_id
+};
+
+
 use crate::handlers::fasting::{
     get_current_fasting_status, start_fasting, stop_fasting, get_user_fasting_sessions, remove_fasting_goal, update_fasting_goal
 };
@@ -9,6 +14,7 @@ use crate::handlers::analytics::{
     calculate_average_fasting_duration, calculate_total_fasting_time, show_fasting_history,
 };
 use crate::handlers::goals::{add_goal, view_goals};
+use crate::models::User;
 
 /// Displays the main menu and handles user actions.
 pub fn display_main_menu(conn: &mut SqliteConnection) {
@@ -187,4 +193,71 @@ fn prompt_user_id() -> i32 {
             1
         }
     }
+}
+/// Handles user login and authentication.
+fn handle_login_menu(conn: &mut SqliteConnection) -> Option<User> {
+    loop {
+        println!("\nLogin Menu:");
+        println!("1. Login with Username & Password");
+        println!("2. Login with Device ID");
+        println!("3. Back to Main Menu");
+
+        match prompt_user_choice("Enter your choice (1-3): ") {
+            Some(1) => {
+                let username = prompt_user_input("Enter your username: ");
+                let password = prompt_user_input("Enter your password: ");
+
+                match login(conn, Some(&username), Some(&password), None) {
+                    Ok(user) => {
+                        println!("Login successful! Welcome, {}.", user.username);
+                        return Some(user); // ✅ Return user object after login
+                    }
+                    Err(e) => eprintln!("Login failed: {}", e),
+                }
+            }
+            Some(2) => {
+                let device_id = prompt_user_input("Enter your device ID: ");
+
+                match login(conn, None, None, Some(&device_id)) {
+                    Ok(user) => {
+                        println!("Device login successful! Welcome, {}.", user.username);
+                        return Some(user); // ✅ Return user object
+                    }
+                    Err(e) => eprintln!("Login failed: {}", e),
+                }
+            }
+            Some(3) => return None, // Go back to main menu
+            _ => println!("Invalid choice. Please select a valid option."),
+        }
+    }
+}
+/// Allows the user to update their account settings, including linking a device ID.
+fn handle_account_settings(conn: &mut SqliteConnection, user: &User) {
+    loop {
+        println!("\nAccount Settings:");
+        println!("1. Link a New Device ID");
+        println!("2. Back to Main Menu");
+
+        match prompt_user_choice("Enter your choice (1-2): ") {
+            Some(1) => {
+                let new_device_id = prompt_user_input("Enter your new device ID: ");
+
+                match associate_device_id(conn, user.id, &new_device_id) {
+                    Ok(_) => println!("Device ID linked successfully."),
+                    Err(e) => eprintln!("Failed to link device ID: {}", e),
+                }
+            }
+            Some(2) => break,
+            _ => println!("Invalid choice. Please select a valid option."),
+        }
+    }
+}
+/// ✅ Prompts the user for input and returns the trimmed string.
+fn prompt_user_input(message: &str) -> String {
+    print!("{}", message);
+    io::stdout().flush().unwrap();
+
+    let mut input = String::new();
+    io::stdin().read_line(&mut input).unwrap();
+    input.trim().to_string()
 }
