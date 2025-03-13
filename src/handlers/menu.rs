@@ -122,14 +122,14 @@ fn handle_fasting_menu(conn: &mut SqliteConnection, user: &User) {
                 Err(e) => eprintln!("❌ Error retrieving fasting status: {}", e),
             },
             Some(4) => {
-                if let Err(e) = add_goal(user.id, conn) {
+                if let Err(e) = add_goal(user, conn) {
                     eprintln!("❌ Error adding goal: {}", e);
                 } else {
                     println!("✅ Goal added successfully.");
                 }
             }
             Some(5) => {
-                if let Err(e) = view_goals(user.id, conn) {
+                if let Err(e) = view_goals(user, conn) {
                     eprintln!("❌ Error viewing goals: {}", e);
                 }
             }
@@ -221,7 +221,7 @@ fn handle_account_settings(conn: &mut SqliteConnection, user: &User) {
 }
 
 /// ✅ Prompts the user for input and returns the trimmed string.
-fn prompt_user_input(message: &str) -> String {
+pub(crate) fn prompt_user_input(message: &str) -> String {
     print!("{}", message);
     io::stdout().flush().unwrap();
 
