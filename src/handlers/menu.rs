@@ -10,7 +10,7 @@ use crate::handlers::analytics::{
 };
 use crate::handlers::goals::{add_goal, view_goals};
 
-use crate::users::find_user_by_id;
+use crate::users::find::find_user_by_id;
 use crate::users::login::{login, associate_device_id};
 use crate::models::User;
 
@@ -20,7 +20,7 @@ pub fn display_main_menu(conn: &mut SqliteConnection) {
 
     // ✅ Require user login first
     let user = match handle_login_menu(conn) {
-        Some(user) => user,  // ✅ Proceed with authenticated user
+        Some(user) => user,  // ✅ Authenticate
         None => {
             println!("❌ Login required. Exiting...");
             return;

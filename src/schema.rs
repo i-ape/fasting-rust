@@ -38,6 +38,7 @@ diesel::table! {
         hashed_password -> Text,
         device_id -> Nullable<Text>,
         created_at -> Nullable<Timestamp>,
+        last_active -> Nullable<Timestamp>,
     }
 }
 
