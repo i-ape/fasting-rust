@@ -5,17 +5,14 @@ pub mod models;
 pub mod schema;
 pub mod users;
 
-pub use handlers::{
-    fasting::{start_fasting, stop_fasting, get_current_fasting_status, get_user_fasting_sessions}, 
-    analytics::{calculate_average_fasting_duration, calculate_total_fasting_time, show_fasting_history},
-    goals::{add_goal, view_goals},
-};
+pub use handlers::menu::display_main_menu;
+pub use handlers::fasting::{start_fasting, stop_fasting, get_current_fasting_status};
+pub use handlers::analytics::{calculate_average_fasting_duration, calculate_total_fasting_time, show_fasting_history};
+pub use handlers::goals::{add_goal, view_goals};
 
-pub use users::{
-    update::update_user_profile,
-    create::{create_user, register_user},
-    login::{login_user, associate_device_id, login}
-
-}; // From `users/mod.rs`
+pub use users::login::{login_user, associate_device_id};
+pub use users::find::find_user_by_id;
+pub use users::update::update_user_profile;
+ // From `users/mod.rs`
 
 pub use crate::errors::FastingAppError::*;
