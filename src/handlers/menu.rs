@@ -10,6 +10,7 @@ use crate::handlers::analytics::{
 };
 use crate::handlers::goals::{add_goal, view_goals};
 
+use crate::users::find_user_by_id;
 use crate::users::login::{login, associate_device_id};
 use crate::models::User;
 
@@ -198,27 +199,38 @@ fn handle_analytics_menu(conn: &mut SqliteConnection, user: &User) {
     }
 }
 
-/// ✅ Handles account settings (Linking a device ID).
+/// ✅ Handles account settings (View Profile, Link Device)
 fn handle_account_settings(conn: &mut SqliteConnection, user: &User) {
     loop {
         println!("\nAccount Settings:");
-        println!("1. Link a New Device ID");
-        println!("2. Back to Main Menu");
+        println!("1. View My Profile");
+        println!("2. Link a New Device ID");
+        println!("3. Back to Main Menu");
 
-        match prompt_user_choice("Enter your choice (1-2): ") {
+        match prompt_user_choice("Enter your choice (1-3): ") {
             Some(1) => {
+                match find_user_by_id(conn, user.id) {
+                    Ok(user) => {
+                        println!("\n📌 User Profile:");
+                        println!("👤 Username: {}", user.username);
+                        println!("📅 Created At: {:?}", user.created_at);
+                    }
+                    Err(e) => eprintln!("❌ Error retrieving profile: {}", e),
+                }
+            }
+            Some(2) => {
                 let new_device_id = prompt_user_input("Enter your new device ID: ");
-
                 match associate_device_id(conn, user.id, &new_device_id) {
                     Ok(_) => println!("✅ Device ID linked successfully."),
                     Err(e) => eprintln!("❌ Failed to link device ID: {}", e),
                 }
             }
-            Some(2) => break,
+            Some(3) => break,
             _ => println!("❌ Invalid choice. Please select a valid option."),
         }
     }
 }
+
 
 /// ✅ Prompts the user for input and returns the trimmed string.
 pub(crate) fn prompt_user_input(message: &str) -> String {

@@ -12,7 +12,8 @@ pub struct User {
     pub username: String,                  // Text
     pub hashed_password: String,           // Text
     pub device_id: Option<String>,         // Nullable<Text>
-    pub created_at: Option<NaiveDateTime>, // Nullable<Timestamp>
+    pub created_at: Option<NaiveDateTime>, // Nullable<Timestamp>    
+    pub last_active: Option<NaiveDateTime>, // ✅ Ensure this exists
 }
 
 /// Represents a new user to be inserted into the database.
