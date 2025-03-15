@@ -7,14 +7,22 @@ use dotenv::dotenv;
 
 use crate::db::establish_connection;
 use handlers::menu::display_main_menu;
-pub use users::{create_user, login_user, login, register_user};
-
 mod db;
 mod errors;
-mod handlers;
 mod models;
 mod schema;
-mod users;
+pub mod handlers {
+    pub mod analytics;
+    pub mod fasting;
+    pub mod goals;
+    pub mod menu;
+}
+pub mod users {
+    pub mod create;
+    pub mod find;
+    pub mod login;
+    pub mod update;
+}
 
 fn main() {
     dotenv().ok();

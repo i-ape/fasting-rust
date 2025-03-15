@@ -1,0 +1,10 @@
+CREATE TABLE fasting_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    user_id INTEGER NOT NULL,
+    start_time TIMESTAMP NOT NULL,
+    stop_time TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    goal_id INTEGER NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (goal_id) REFERENCES fasting_goals(id) ON DELETE SET NULL
+);
