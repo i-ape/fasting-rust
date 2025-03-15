@@ -18,34 +18,30 @@ use crate::models::User;
 
 /// ✅ Displays the main menu **AFTER login**.
 pub fn display_main_menu(conn: &mut SqliteConnection) {
-    println!("Welcome to Fasting Tracker!");
-
-    // ✅ Require user login first
-    let user = match handle_login_menu(conn) {
-        Some(user) => user,  // ✅ Authenticate
-        None => {
-            println!("❌ Login required. Exiting...");
-            return;
-        }
-    };
-
     loop {
         println!("\nMain Menu:");
-        println!("1. Fasting Menu");
-        println!("2. Analytics Menu");
-        println!("3. Account Settings");
-        println!("4. Exit");
+        println!("1. Login");
+        println!("2. Register"); // ✅ Add Register Option
+        println!("3. Exit");
 
-        match prompt_user_choice("Enter your choice (1-4): ") {
-            Some(1) => handle_fasting_menu(conn, &user),
-            Some(2) => handle_analytics_menu(conn, &user),
-            Some(3) => handle_account_settings(conn, &user), // ✅ Link a device
-            Some(4) => {
+        match prompt_user_choice("Enter your choice (1-3): ") {
+            Some(1) => handle_login_menu(conn),
+            Some(2) => handle_register_menu(conn), // ✅ Call Registration
+            Some(3) => {
                 println!("Exiting... Goodbye!");
                 break;
             }
             _ => println!("❌ Invalid choice. Please select a valid option."),
         }
+    }
+}
+fn handle_register_menu(conn: &mut SqliteConnection) {
+    let username = prompt_user_input("Enter your username: ");
+    let password = prompt_user_input("Enter your password: ");
+
+    match create_user(conn, &username, &password) {
+        Ok(_) => println!("✅ Registration successful! You can now log in."),
+        Err(e) => eprintln!("❌ Failed to register: {}", e),
     }
 }
 

@@ -5,23 +5,23 @@ use bcrypt::{hash, DEFAULT_COST};
 use diesel::prelude::*;
 use diesel::SqliteConnection;
 
-/// Creates a new user in the database.
-pub fn create_user(
-    conn: &mut SqliteConnection,
-    username_input: &str,
-    password_input: &str,
-) -> Result<usize, FastingAppError> {
-    let hashedp = hash(password_input, DEFAULT_COST).map_err(FastingAppError::PasswordHashError)?;
+/// ✅ Creates a new user
+pub fn create_user(conn: &mut SqliteConnection, username_input: &str, password_input: &str) -> Result<(), FastingAppError> {
+    let hashed_password = hash(password_input, DEFAULT_COST)
+        .map_err(|_| FastingAppError::PasswordHashError)?;
+
     let new_user = NewUser {
         username: username_input.to_string(),
-        hashed_password: hashedp,
-        device_id: None, // No device ID provided
+        hashed_password,
+        device_id: None,
     };
-    
+
     diesel::insert_into(users)
         .values(&new_user)
         .execute(conn)
-        .map_err(FastingAppError::DatabaseError)
+        .map_err(FastingAppError::DatabaseError)?;
+
+    Ok(())
 }
 
 /// Registers a new user by wrapping `create_user`.
