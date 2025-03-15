@@ -6,9 +6,13 @@ use diesel::prelude::*;
 use diesel::SqliteConnection;
 
 /// ✅ Creates a new user
-pub fn create_user(conn: &mut SqliteConnection, username_input: &str, password_input: &str) -> Result<(), FastingAppError> {
+pub fn create_user(
+    conn: &mut SqliteConnection, 
+    username_input: &str, 
+    password_input: &str
+) -> Result<(), FastingAppError> {
     let hashed_password = hash(password_input, DEFAULT_COST)
-        .map_err(|_| FastingAppError::PasswordHashError)?;
+        .map_err(FastingAppError::PasswordHashError)?;
 
     let new_user = NewUser {
         username: username_input.to_string(),
