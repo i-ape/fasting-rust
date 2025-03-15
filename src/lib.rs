@@ -15,6 +15,7 @@ pub mod users {
     pub mod find;
     pub mod login;
     pub mod update;
+    pub mod create;
 }
 
 // ✅ Publicly re-export functions so they are accessible from `lib.rs`

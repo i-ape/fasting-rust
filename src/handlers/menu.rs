@@ -12,6 +12,8 @@ use crate::handlers::goals::{add_goal, view_goals};
 
 use crate::users::find::find_user_by_id;
 use crate::users::login::{login, associate_device_id};
+use crate::users::create::{create_user, register_user};
+
 use crate::models::User;
 
 /// ✅ Displays the main menu **AFTER login**.
@@ -31,7 +33,7 @@ pub fn display_main_menu(conn: &mut SqliteConnection) {
         println!("\nMain Menu:");
         println!("1. Fasting Menu");
         println!("2. Analytics Menu");
-        println!("3. Account Settings");  // ✅ New option for linking device
+        println!("3. Account Settings");
         println!("4. Exit");
 
         match prompt_user_choice("Enter your choice (1-4): ") {
