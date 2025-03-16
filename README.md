@@ -1,4 +1,5 @@
 # **Fasting-Rust** 🕰️🚀  
+stuff
 
 A **fasting tracker** built with **Rust**, using **Diesel, SQLite, and bcrypt** for authentication and data management.  
 
