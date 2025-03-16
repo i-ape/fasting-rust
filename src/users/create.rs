@@ -27,19 +27,3 @@ pub fn create_user(
 
     Ok(())
 }
-
-/// Registers a new user by wrapping `create_user`.
-pub fn register_user(
-    conn: &mut SqliteConnection,
-    username_input: &str,
-    password_input: &str,
-) -> Result<String, FastingAppError> {
-    create_user(conn, username_input, password_input)
-        .map(|_| "User created successfully".to_string())
-        .map_err(|e| match e {
-            FastingAppError::DatabaseError(diesel_error) => {
-                FastingAppError::DatabaseError(diesel_error)
-            }
-            _ => e,
-        })
-}

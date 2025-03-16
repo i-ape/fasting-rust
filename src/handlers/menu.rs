@@ -12,36 +12,49 @@ use crate::handlers::goals::{add_goal, view_goals};
 
 use crate::users::find::find_user_by_id;
 use crate::users::login::{login, associate_device_id};
-use crate::users::create::{create_user, register_user};
+use crate::users::create::create_user;
 
 use crate::models::User;
 
 /// ✅ Displays the main menu **AFTER login**.
 pub fn display_main_menu(conn: &mut SqliteConnection) {
+    let mut user: Option<User> = None;
+
     loop {
         println!("\nMain Menu:");
         println!("1. Login");
-        println!("2. Register"); // ✅ Add Register Option
+        println!("2. Register");
         println!("3. Exit");
 
         match prompt_user_choice("Enter your choice (1-3): ") {
-            Some(1) => handle_login_menu(conn),
-            Some(2) => handle_register_menu(conn), // ✅ Call Registration
+            Some(1) => user = handle_login_menu(conn),
+            Some(2) => user = handle_register_menu(conn),
             Some(3) => {
-                println!("Exiting... Goodbye!");
+                println!("Exiting...");
                 break;
             }
             _ => println!("❌ Invalid choice. Please select a valid option."),
         }
+
+        if let Some(ref u) = user {
+            println!("✅ Welcome, {}! You are now logged in.", u.username);
+        }
     }
 }
-fn handle_register_menu(conn: &mut SqliteConnection) {
-    let username = prompt_user_input("Enter your username: ");
+
+fn handle_register_menu(conn: &mut SqliteConnection) -> Option<User> {
+    let username = prompt_user_input("Enter your desired username: ");
     let password = prompt_user_input("Enter your password: ");
 
     match create_user(conn, &username, &password) {
-        Ok(_) => println!("✅ Registration successful! You can now log in."),
-        Err(e) => eprintln!("❌ Failed to register: {}", e),
+        Ok(_) => {
+            println!("✅ Registration successful! You can now log in.");
+            None // Registration does not return a user
+        }
+        Err(e) => {
+            eprintln!("❌ Registration failed: {}", e);
+            None
+        }
     }
 }
 
@@ -263,3 +276,4 @@ fn prompt_optional_goal_id() -> Option<i32> {
         Err(_) => None,     // ✅ User skipped (pressed Enter)
     }
 }
+
