@@ -17,6 +17,7 @@ use crate::users::create::create_user;
 use crate::models::User;
 
 /// ✅ Displays the main menu and routes users to submenus after login.
+/// ✅ Displays the main menu and routes users to submenus after login.
 pub fn display_main_menu(conn: &mut SqliteConnection) {
     let mut user: Option<User> = None;
 
@@ -65,6 +66,7 @@ fn display_authenticated_menu(conn: &mut SqliteConnection, user: &User) {
         }
     }
 }
+
 
 
 fn handle_register_menu(conn: &mut SqliteConnection) -> Option<User> {
@@ -235,6 +237,7 @@ fn handle_analytics_menu(conn: &mut SqliteConnection, user: &User) {
         }
     }
 }
+
 
 
 /// ✅ Handles account settings (View Profile, Link Device)
