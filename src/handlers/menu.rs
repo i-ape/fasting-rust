@@ -16,12 +16,12 @@ use crate::users::create::create_user;
 
 use crate::models::User;
 
-/// ✅ Displays the main menu **AFTER login**.
+/// ✅ Displays the main menu and routes users to submenus after login.
 pub fn display_main_menu(conn: &mut SqliteConnection) {
     let mut user: Option<User> = None;
 
     loop {
-        println!("\nMain Menu:");
+        println!("\nWelcome to Fasting-Rust! 🚀");
         println!("1. Login");
         println!("2. Register");
         println!("3. Exit");
@@ -30,17 +30,42 @@ pub fn display_main_menu(conn: &mut SqliteConnection) {
             Some(1) => user = handle_login_menu(conn),
             Some(2) => user = handle_register_menu(conn),
             Some(3) => {
-                println!("Exiting...");
+                println!("👋 Exiting... Goodbye!");
                 break;
             }
             _ => println!("❌ Invalid choice. Please select a valid option."),
         }
 
+        // ✅ If user successfully logs in, route them to the main app menu
         if let Some(ref u) = user {
             println!("✅ Welcome, {}! You are now logged in.", u.username);
+            return display_authenticated_menu(conn, u);  // ✅ Call new menu function
         }
     }
 }
+
+/// ✅ Displays the **Authenticated User Menu** after login.
+fn display_authenticated_menu(conn: &mut SqliteConnection, user: &User) {
+    loop {
+        println!("\n📌 **Main Menu**");
+        println!("1. Fasting Menu");
+        println!("2. Analytics Menu");
+        println!("3. Account Settings");
+        println!("4. Logout");
+
+        match prompt_user_choice("Enter your choice (1-4): ") {
+            Some(1) => handle_fasting_menu(conn, user),
+            Some(2) => handle_analytics_menu(conn, user),
+            Some(3) => handle_account_settings(conn, user),
+            Some(4) => {
+                println!("👋 Logged out. Returning to main screen...");
+                break;
+            }
+            _ => println!("❌ Invalid choice. Please select a valid option."),
+        }
+    }
+}
+
 
 fn handle_register_menu(conn: &mut SqliteConnection) -> Option<User> {
     let username = prompt_user_input("Enter your desired username: ");
@@ -49,7 +74,7 @@ fn handle_register_menu(conn: &mut SqliteConnection) -> Option<User> {
     match create_user(conn, &username, &password) {
         Ok(_) => {
             println!("✅ Registration successful! You can now log in.");
-            None // Registration does not return a user
+            None
         }
         Err(e) => {
             eprintln!("❌ Registration failed: {}", e);
@@ -99,10 +124,10 @@ fn handle_login_menu(conn: &mut SqliteConnection) -> Option<User> {
 /// ✅ Handles the **Fasting Menu**.
 fn handle_fasting_menu(conn: &mut SqliteConnection, user: &User) {
     loop {
-        println!("\nFasting Menu:");
+        println!("\n🔥 **Fasting Menu**:");
         println!("1. Start Fasting");
         println!("2. Stop Fasting");
-        println!("3. Fasting Status");
+        println!("3. View Fasting Status");
         println!("4. Add Goal");
         println!("5. View Goals");
         println!("6. Update Fasting Goal");
@@ -166,10 +191,11 @@ fn handle_fasting_menu(conn: &mut SqliteConnection, user: &User) {
     }
 }
 
+
 /// ✅ Handles the **Analytics Menu**.
 fn handle_analytics_menu(conn: &mut SqliteConnection, user: &User) {
     loop {
-        println!("\nAnalytics Menu:");
+        println!("\n📊 **Analytics Menu**:");
         println!("1. Fasting History");
         println!("2. Average Fasting Duration");
         println!("3. Total Fasting Time");
@@ -209,6 +235,7 @@ fn handle_analytics_menu(conn: &mut SqliteConnection, user: &User) {
         }
     }
 }
+
 
 /// ✅ Handles account settings (View Profile, Link Device)
 fn handle_account_settings(conn: &mut SqliteConnection, user: &User) {
